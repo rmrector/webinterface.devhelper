@@ -1,0 +1,535 @@
+html {
+	box-sizing: border-box;
+}
+*, *:before, *:after {
+	margin: 0;
+	padding: 0;
+	box-sizing: inherit;
+}
+body {
+	font-family: 'Roboto', sans-serif;
+}
+pre {
+	font-family: 'Roboto Mono', monospace;
+	font-size: 13.5px;
+	line-height: 120%;
+}
+*::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
+	background-color: transparent;
+}
+
+*::-webkit-scrollbar {
+	width: 6px;
+	height: 6px;
+}
+
+*::-webkit-scrollbar-thumb {
+	box-shadow: inset 0 0 3px rgba(0, 0, 0, .3);
+	background-color: hsla(0, 0%, 50%, 0.5);
+}
+
+ul {
+	list-style: none;
+}
+
+i.material-icons {
+	vertical-align: -6px;
+}
+
+.icon {
+	display: inline-block;
+	font-size: 24px;
+	font-style: normal;
+	line-height: 1;
+	width: 24px;
+	height: 24px;
+	transition: transform 0.5s;
+}
+.icon.rotate {
+	transform: rotate(0.375turn);
+}
+.icon.rotate50 {
+	transform: rotate(-0.5turn);
+}
+
+.forever-rotate {
+	animation: rotation 2.5s infinite cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+@keyframes rotation {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(359deg); }
+}
+
+input:required {
+	outline: 1px solid hsl(0, 50%, 60%);
+	outline-offset: unset;
+}
+input[data-readonly] {
+	pointer-events: none;
+}
+
+.flatbutton {
+	border: none;
+	color: white;
+	padding: 12px;
+	text-align: center;
+	text-decoration: none;
+	display: inline-block;
+	font-size: 14px;
+	height: 48px;
+	min-width: 48px;
+	transition: box-shadow 0.5s;
+}
+.flatbutton:hover {
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+}
+
+.clearbutton {
+	background-color: transparent;
+	transition: box-shadow 0.5s, background-color 0.5s;
+	outline: none;
+	color: hsl(0, 0%, 20%);
+}
+.clearbutton:hover {
+	background-color: hsla(0, 0%, 90%, 0.5);
+}
+
+.smallbutton {
+	padding: 0;
+	min-width: unset;
+	height: unset;
+	border-radius: 3px;
+	color: hsl(0, 0%, 40%);
+}
+
+.smallbutton-text {
+	padding: 2px;
+	min-width: 28px;
+	height: 28px;
+	border-radius: 3px;
+	color: hsl(0, 0%, 40%);
+}
+
+.nodisplay {
+	display: none !important;
+}
+
+.header a, .method-list a, .footer a, .action-container a {
+	text-decoration: none;
+}
+.header--title, .conbox--content, .conbox--shortcontent, .method-list, .content, .notifications,
+.footer, .execution-container {
+	padding: 10px;
+}
+.header {
+	display: flex;
+	z-index: 2;
+	position: relative;
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+}
+	.header--title {
+		height: 60px;
+		flex: 1;
+		display: flex;
+	}
+	.header--title > div:first-of-type {
+		flex: 1;
+	}
+.conbox {
+	width: 400px;
+}
+.footer {
+	height: 40px;
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	z-index: 2;
+	position: relative;
+}
+.wrapper {
+	height: calc(100vh - 100px);
+	align-items: stretch; /* works on Chrome, doesn't seem to on FF, setting height in media query */
+	display: flex;
+	flex-flow: row wrap-reverse;
+}
+.method-list {
+	flex: 1 230px;
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	position: relative;
+	z-index: 1;
+}
+.content-box {
+	flex: 9999 1 500px;
+}
+.execution-container {
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	min-height: 50px;
+}
+
+.inline-li {
+	padding: 5px;
+	margin: 5px;
+	background-color: hsla(0, 0%, 55%, 0.35);
+	border-radius: 5px;
+	display: inline-block;
+}
+
+.inline-popout {
+	padding: 1px;
+}
+.has-popoutinfo {
+	border: 1px solid transparent;
+	cursor: default;
+}
+.has-popoutinfo:hover {
+	border: 1px solid hsl(0, 0%, 50%);
+}
+.has-popoutinfo.selected {
+	box-shadow: 0px 0px 5px 2px hsla(222, 100%, 50%, 0.75);
+}
+
+@media screen and (max-width: 800px) {
+	.header {
+		flex-direction: column;
+	}
+	.wrapper {
+		height: unset;
+		min-height: calc(100vh - 160px);
+	}
+	.conbox {
+		width: 100%;
+	}
+	.content-container {
+		max-height: 100vh;
+		overflow-y: auto;
+		/* Preview looks weird stuck to the bottom of this */
+	}
+}
+@media screen and (min-width: 801px) {
+	.conbox {
+		position: relative;
+	}
+	.conbox--content {
+		position: absolute;
+		bottom: -200px;
+		box-shadow: -2px 2px 2px 0px hsla(0, 0%, 0%, 0.25);
+	}
+	.method-list {
+		overflow-y: auto;
+		height: 100%;
+	}
+	.content-box {
+		height: 100%;
+		position: relative;
+		display: flex;
+		flex-flow: column;
+		overflow: hidden;
+	}
+	.content-box .content-container {
+		display: flex;
+		flex: 1 0;
+		order: 0;
+		overflow: hidden;
+	}
+	.content-box .execution-container {
+		order: 1;
+	}
+	.content {
+		flex: 1 0 70%;
+	}
+	.notify-preview-box {
+		flex: 0 380px;
+	}
+	.content, .notifications {
+		overflow-y: auto;
+	}
+}
+
+/* index */
+.header--title {
+	font-size: 26px;
+	font-weight: bold;
+	padding-top: 5px;
+	padding-bottom: 15px;
+}
+.header--subtitle {
+	font-size: initial;
+	font-weight: normal;
+}
+.header--subtitle::after, .header--subtitle::before {
+	content: '"'
+}
+.footer {
+	display: flex;
+}
+.footer .footer-buttons {
+	margin-top: -10px;
+}
+.footer .footer-buttons button {
+	height: 40px;
+	padding-top: 9px;
+	box-shadow: unset;
+}
+.footer .madeby {
+	width: 100%;
+	text-align: right;
+}
+.footer a {
+	color: hsl(0, 0%, 20%);
+}
+.splash {
+	position: absolute;
+	background-color: white;
+	transition: opacity 0.2s;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 10;
+}
+.fadeout {
+	opacity: 0;
+}
+
+/* connectionbox */
+.conbox--shortcontent {
+	text-align: right;
+	display: flex;
+}
+	.conbox--shortcontent-message, .conbox--input {
+		flex-grow: 1;
+		display: flex;
+		align-items: center;
+		justify-content: flex-end;
+	}
+.conbox--shortcontent p {
+	margin: 0;
+}
+.conbox--button {
+	margin: -4px;
+	margin-right: 4px;
+	margin-left: 4px;
+	background-color: hsl(0, 60%, 50%);
+}
+	.conbox--button.connected {
+		background-color: hsl(120, 60%, 30%);
+	}
+.conbox--content {
+	width: 100%;
+	height: 200px;
+	overflow-y: auto;
+}
+
+.connection-li {
+	cursor: default;
+	border: 1px solid transparent;
+	margin: 1px;
+	transition: background-color 0.5s;
+	position: relative;
+}
+.connection-li .closeicon::after {
+	content: "delete";
+}
+.connection-li.selected {
+	background-color: hsla(0, 0%, 85%, 0.5);
+	border: 1px solid hsl(0, 0%, 50%);
+}
+.connection-li.selected .closeicon::after {
+	content: "close";
+}
+.connection-li:hover {
+	background-color: hsla(0, 0%, 100%, 0.75);
+}
+.connection-li .closeicon {
+	position: absolute;
+	top: 3px;
+	right: 1px;
+	color: hsl(0, 60%, 50%);
+	background-color: hsla(0, 0%, 0%, 0.75);
+	border-radius: 14px;
+	display: none;
+	padding: 2px;
+	margin-top: -2.5px;
+	transition: background-color 0.25s;
+}
+.connection-li:hover .closeicon {
+	display: inline-block;
+}
+.connection-li .closeicon:hover {
+	background-color: hsla(0, 0%, 50%, 0.75);
+}
+
+/* methodlist */
+.method-list ul li {
+	padding: 5px 0;
+	font-size: 14px;
+}
+.method-list a {
+	color: black;
+}
+.method-search {
+	margin: 10px 0;
+}
+.namespace-li {
+	font-weight: bold;
+}
+.methodlist-toggle {
+	position: absolute;
+	top: 0;
+}
+
+/* contentbox */
+.runningdata-section {
+	max-width: 50px;
+	vertical-align: top;
+}
+@media screen and (min-width: 1101px) and (max-width: 1600px) {
+	.runningdata-section {
+		max-width: calc(50% - 10px);
+	}
+}
+@media screen and (max-width: 1100px) {
+	.runningdata-section {
+		max-width: unset;
+	}
+}
+.runningdata-li .li-title {
+	font-weight: bold;
+}
+.runningdata-li .li-title.has-value::after {
+	content: ":";
+}
+.result, .notification, .runningdata {
+	margin: 5px;
+	padding: 5px;
+	background-color: hsla(0, 0%, 0%, 0.10);
+	max-width: 100%;
+}
+.result p, .runningdata p {
+	margin-top: 0.5em;
+}
+.result-title, .notification-title, .runningdata-title {
+	font-size: 18px;
+	font-weight: bold;
+	margin-bottom: 4px;
+}
+.result-output, .notification-data {
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+.runningdata-data {
+	word-break: break-word;
+}
+.notify-preview-box {
+	display: flex;
+	flex-direction: column;
+	overflow-y: auto;
+}
+.notifications {
+	flex: 1 1 auto;
+}
+.preview {
+	flex: 0 0 auto;
+	color: white;
+	max-height: 400px;
+	background-color: hsla(0, 0%, 0%, 0.75);
+	border-radius: 5px 0 0;
+	overflow-y: auto;
+	word-break: break-word;
+}
+	.preview pre, .preview div {
+		padding: 5px;
+		white-space: pre-wrap;
+		word-break: break-all;
+	}
+	.preview img {
+		max-width: 100%;
+		max-height: 350px;
+		display: block;
+		margin: auto;
+	}
+.runningping {
+	position: absolute;
+	right: 5px;
+	color: hsl(0, 0%, 30%);
+}
+.runningping.supafast {
+	font-size: 18px;
+	color: hsl(0, 100%, 30%);
+}
+.runningping.fast {
+	font-size: 18px;
+	color: hsl(30, 90%, 40%);
+}
+.notify-box-buttons {
+	height: 0;
+	position: relative;
+}
+.notify-box-buttons button {
+	position: absolute;
+	right: 0;
+	margin: 8px;
+}
+.notifications-paused {
+	color: hsl(0, 50%, 35%);
+}
+
+/* executionbox */
+.execution-container form {
+	display: flex;
+	flex-flow: row wrap;
+	align-items: stretch;
+	width: 100%;
+}
+.method-title .title {
+	font-weight: bold;
+}
+.params-list {
+	flex: 9999;
+	margin-right: 10px;
+	max-height: 200px;
+	overflow: auto;
+}
+	.param-li {
+		position: relative;
+		vertical-align: top;
+	}
+	.param-li label {
+		display: block;
+	}
+	.param-li input, .param-li select {
+		display: block;
+		margin-top: 5px;
+	}
+	.param-li input:not([type='checkbox']), .param-li select {
+		min-width: 110px;
+	}
+	.param-li input[type="checkbox"] {
+		margin: 0 auto;
+	}
+	.param-li input.toggler {
+		cursor: default;
+		max-width: 110px;
+		color: transparent;
+		text-shadow: 0 0 0 black;
+	}
+	.param-li .switcher {
+		position: absolute;
+		right: 2px;
+		top: 2px;
+		display: inline-block;
+	}
+
+.action-button {
+	background-color: #555555;
+	transition: box-shadow 0.5s, background-color 0.5s;
+	margin-top: 10px;
+}
+.action-button:hover {
+	background-color: #777777;
+}
+.execution--bigbox {
+	margin-top: 5px;
+	width: 250px;
+	min-width: 250px;
+	height: calc(100% - 24px);
+	min-height: 63px;
+}

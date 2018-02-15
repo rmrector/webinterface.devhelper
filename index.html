@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta charset="utf-8"/>
+<!-- <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
+<link href="css/roboto_materialicons.css" rel="stylesheet">
+
+<title>Devhelper web</title>
+<link href="css/style.css" rel="stylesheet">
+<script src="js/libs.js"></script>
+</head>
+<body>
+<div class="header">
+	<div class="header--title"><div><a id="maintitle" href="">Devhelper web</a>
+		<div class="header--subtitle">It's not really for goats...</div></div>
+		<div class="header--buttons">
+			<button type="button" id="actions-button-js" class="flatbutton clearbutton nodisplay"
+				title="Show Handy Actions"><i class="material-icons">dns</i></button>
+			<a href="" id="webpdb-button-js" class="flatbutton clearbutton nodisplay"
+				title="Open Web PDB (Python debugger)" target="kodiwebpdb"><i class="material-icons">bug_report</i></a>
+			<a href="" id="log-button-js" class="flatbutton clearbutton nodisplay"
+				title="View Kodi log" target="kodilog"><i class="material-icons">list</i></a>
+			<button type="button" id="running-button-js" class="flatbutton clearbutton"
+				title="Show running data"><i class="material-icons">autorenew</i></button>
+		</div>
+	</div>
+	<div class="conbox">
+		<div class="conbox--shortcontent">
+			<div id="conbox-shortcontent-js" class="conbox--shortcontent-message"><span>No host</span></div>
+			<button type="button" id="conbox-button-js" class="flatbutton conbox--button"
+				title="Expand connection list"><i class="icon">+</i></button>
+		</div>
+		<div id="conbox-content-js" class="conbox--content" style="display: none">
+			<div style="text-align: right; margin-bottom: 3px;"><label>Connect to new host <input type="text" name="host"
+				placeholder="http://localhost:8080" style="margin-left: 10px;width: 200px"></label></div>
+			<div id="conbox-allconnections"></div>
+			<template id="connection-template"><li class="connection-li inline-li connection-li-js"><span></span>
+				<i class="material-icons closeicon"></i></li></template>
+		</div>
+	</div>
+</div>
+<div class="wrapper">
+	<div class="method-list">
+		<input placeholder="Find method" type="text" class="method-search" id="method-search-js">
+		<ul id="method-list-js"></ul>
+		<template id="namespace-template"><li class="namespace-li namespace-li-js"><a></a></li></template>
+		<template id="method-template"><li class="method-li nodisplay"><a></a></li></template>
+	</div>
+	<div class="content-box">
+		<button type="button" id="methodlist-toggle-button-js" class="flatbutton clearbutton smallbutton methodlist-toggle"
+			title="Toggle method list display"><i class="material-icons icon">chevron_left</i></button>
+		<div id="execution-container-js" class="execution-container">
+			<div id="method-title-js" class="method-title"><span class="title"></span><span></span></div>
+			<div><form name="params-form">
+				<ul id="params-list-js" class="params-list"></ul>
+				<template id="param-template"><li class="param-li inline-li has-popoutinfo">
+					<label><span>Param name</span><input type="text" /></label>
+					<button class="flatbutton clearbutton smallbutton switcher switcher-js nodisplay" type="button" tabindex="-1"
+						title="Click to toggle examples"><i class="material-icons">rotate_right</i></button>
+				</li></template>
+				<template id="param-bool-template"><li class="param-li inline-li has-popoutinfo">
+					<label><span>Param name</span><input type="checkbox" /></label>
+				</li></template>
+				<template id="param-select-template"><li class="param-li inline-li has-popoutinfo">
+					<label><span>Param name</span><select></select></label>
+				</li></template>
+				<div class="inline-li nodisplay">
+					<div>Custom InfoLabels</div>
+					<textarea id="custom-infolabels-js" class="execution--bigbox"></textarea>
+				</div>
+				<div class="inline-li nodisplay">
+					<div>Custom InfoBooleans</div>
+					<textarea id="custom-infobooleans-js" class="execution--bigbox"></textarea>
+				</div>
+				<div id="action-container-js" class="action-container">
+					<button type="submit" id="execute-button-js" class="flatbutton action-button run-button switcher nodisplay">
+						<i class="material-icons">play_arrow</i> Execute method</button>
+					<button type="button" id="filter-button-js" class="flatbutton clearbutton smallbutton nodisplay"
+						title="Toggle all infos"><i class="material-icons">filter_list</i></button>
+				</div>
+			</form></div>
+		</div>
+		<div class="content-container">
+			<div id="content-js" class="content">
+				<div class="result">
+					<p>You can add more Kodi hosts in the orange section to the far right along the top.
+					<p>Click the "Show running data" button in the right of the red section along the top to watch InfoLabels
+					and InfoBooleans, the same data available to skins.
+					<span id="log-desc-js" class="nodisplay">To use the "View Kodi log" button,
+					add "special://logpath/" as a media source (pictures, music, or videos; the file browser won't work).
+					Do note that this allows HTTP access to everything in the same folder as the log, including subdirectories.
+					On Windows this includes everything in Kodi's entire data directory.</span>
+					<span id="webpdb-desc-js" class="nodisplay">See
+					<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
+					for super Python debugging powers.</span>
+					<p>All notifications from the connected Kodi host will show up on the right, and you can explore
+					JSON-RPC methods to the left, then fill out the params and execute it below.
+					<p>URLs power much of the functionality, which can be bookmarked for quick access.
+					<p>A details box will show up at the bottom of the column to the right, showing details of certain items
+					as your mouse cursor passes over them. Param details will show up here, as well as the full JSON-RPC request over
+					the title of method "Calling" and "Result" info, and images from image URLs in requests and the
+					"Available art" running data section. Click on the item to pin the details so that your mouse cursor can roam.
+				</div>
+			</div>
+			<div class="notify-preview-box">
+				<div class="notify-box-buttons">
+					<button type="button" id="notification-pause-js" class="flatbutton clearbutton smallbutton"
+						title="Pause notifications"><i class="material-icons">notifications</i></button>
+				</div>
+				<div id="notifications-js" class="notifications"></div>
+				<div id="preview-js" class="preview"></div>
+			</div>
+			<template id="output-template"><div class="result">
+				<div class="result-title data-js"></div><pre class="result-output data-js"></pre>
+			</div></template>
+			<template id="runningdata-template"><div class="runningdata" style="position: relative;">
+				<button type="button" id="runningdata-ping-js" title="Toggle running speed" tabindex="-1"
+					class="flatbutton clearbutton smallbutton-text runningping"></button>
+				<div id="runningdata-help-js" class="nodisplay">
+					Check one or more boxes in the yellow section below to watch some data that is frequently updated.
+					These are powered by InfoLabels and InfoBooleans, the same info available to skins.
+					<p>"Video/Music art" will show only 3 fanart ('fanart', 'fanart1', 'fanart2'), but more may be set.
+					Ditto "artist"/"artist1" and "albumartist"/"albumartist1".
+					<p>Custom InfoLabels and InfoBooleans can be entered one per line.
+					<p>Click on the ping time ('##ms') in the top-right of this box to update faster.</div>
+			</div></template>
+			<template id="runningdata-section-template"><div class="runningdata-section inline-li nodisplay">
+				<div class="runningdata-title data-js">Section title</div><ul class="runningdata-data data-js"></ul>
+			</div></template>
+			<template id="runningdata-li-template"><li class="runningdata-li"><span class="li-title"></span><span></span></li></template>
+			<template id="notification-template"><div class="notification">
+				<div class="notification-title data-js"></div><pre class="notification-data data-js"></pre>
+			</div></template>
+			<template id="preview-pre-template"><pre></pre></template>
+			<template id="preview-img-template"><div></div><img></template>			
+		</div>
+	</div>
+</div>
+<div class="footer">
+	<div class="footer-buttons"><button type="button" id="theme-switcher-js" class="flatbutton clearbutton"
+		title="Switch color theme"><i class="material-icons">format_paint</i></button></div>
+	<div class="madeby">Made by <a href="https://github.com/rmrector" target="_blank">Ryan Rector</a></div>
+</div>
+<div class="splash" id="splash-js"></div>
+<link class="themesheet" href="css/rainbowhork.css" rel="stylesheet" title="Default theme">
+<link class="themesheet" href="css/light.css" rel="alternate stylesheet" title="Light theme">
+<script src="js/ui.js"></script>
+<script src="js/frontend.js"></script>
+<script>UI.emit('loaded')</script>
+</body>
+</html>

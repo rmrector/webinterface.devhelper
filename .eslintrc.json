@@ -1,0 +1,24 @@
+{
+	"globals": {
+		"UI": false,
+		"toolbox": false,
+		"hashman": false,
+		"$": false,
+		"$ls": false
+	},
+	"rules": {
+		"no-unused-vars": ["warn", {"argsIgnorePattern": "^_\\w?$"}],
+		"no-constant-condition": ["warn", {"checkLoops": false}],
+		"no-console": "off"
+	},
+	"env": {
+		"es6": true,
+		"browser": true
+	},
+	"extends": "eslint:recommended",
+	"parserOptions": {
+		"ecmaFeatures": {
+			"experimentalObjectRestSpread": true
+		}
+	}
+}
