@@ -254,7 +254,7 @@ input[data-readonly] {
 	font-size: initial;
 	font-weight: normal;
 }
-.header--subtitle::after, .header--subtitle::before {
+.header--subtitle:not(:empty)::after, .header--subtitle:not(:empty)::before {
 	content: '"'
 }
 .footer {

@@ -474,6 +474,15 @@ store._scriptwindows = JSON.parse(localStorage.getItem(SCRIPTWINDOWS_KEY))
 store._switches = JSON.parse(localStorage.getItem(SWITCHES_KEY))
 
 UI.on('loaded', () => {
+	if (store._connections) {
+		Object.entries(store._connections[0]).forEach(e => appdata.add_connection(...e))
+		appdata.connect(store._connections[1])
+	} else {
+		store._connections = [{}, '']
+		appdata.connect(window.location.origin)
+	}
+	const subtitles = ["It's not really for goats...", "A possible solution for number b"]
+	UI.set_subtitle(subtitles[Math.floor(Math.random() * (subtitles.length + 10))] || '')
 	if (store._theme)
 		UI.set_theme(store._theme)
 	if (store._switches) {
@@ -494,25 +503,19 @@ UI.on('loaded', () => {
 			'script-nextup-notification-PostPlayInfo.xml', 'script-nextup-notification-NextUpInfo.xml',
 			'script-nextup-notification-StillWatchingInfo.xml', 'script-nextup-notification-UnwatchedInfo.xml',
 			'script-stinger-notification-Notification.xml', 'settings_gui.xml' /* My OSMC */]
-	if (store._connections) {
-		Object.entries(store._connections[0]).forEach(e => appdata.add_connection(...e))
-		appdata.connect(store._connections[1])
-	} else {
-		store._connections = [{}, '']
-		appdata.connect(window.location.origin)
-	}
 	UI.hidesplash()
 })
 
 function getall_arttypes() {
 	const mediatypes = {'movie': 'VideoLibrary.GetMovies', 'tvshow': 'VideoLibrary.GetTVShows',
-		'set': 'VideoLibrary.GetMovieSets', 'season': 'VideoLibrary.GetSeasons'}
+		'set': 'VideoLibrary.GetMovieSets', 'season': 'VideoLibrary.GetSeasons',
+		'musicvideo': 'VideoLibrary.GetMusicVideos', 'artist': 'AudioLibrary.GetArtists',
+		'album': 'AudioLibrary.GetAlbums'}
 	const result = {}
-	const promises = []
-	for (const mediatype of Object.keys(mediatypes)) {
-		promises.push(appdata.connection.call(mediatypes[mediatype], {"properties":["art"]})
-		.then(data => new Set([].concat(...data[mediatype + 's'].map(mov => Object.keys(mov.art).filter(at => !at.includes('.'))))))
-		.then(list => result[mediatype] = list))
-	}
-	return Promise.all(promises).then(() => result)
+	return Object.keys(mediatypes).reduce((promise, mediatype) => promise.then(() =>
+		appdata.connection.call(mediatypes[mediatype], {"properties":["art"]})
+		.then(data => data[mediatype + 's'].map(mov => Object.keys(mov.art).filter(at => !at.includes('.'))))
+		.then(lists => toolbox.uniquelist([].concat(...lists)))
+		.then(list => result[mediatype] = list)
+	), Promise.resolve()).then(() => result)
 }

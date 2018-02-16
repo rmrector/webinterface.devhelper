@@ -36,6 +36,10 @@ UI.hidesplash = function() {
 	splash.classList.add('fadeout')
 }
 
+UI.set_subtitle = function(subtitle) {
+	$('#subtitle-js').innerText = subtitle
+}
+
 $('#theme-switcher-js').addEventListener('click', () => {
 	let nextlink = false
 	for (let link of $ls('link.themesheet')) {

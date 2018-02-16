@@ -120,6 +120,11 @@ toolbox.rangegen = function*(start, edge, step) {
 }
 toolbox.range = (start, edge, step) => Array.from(toolbox.rangegen(start, edge, step))
 
+const _pipe = (f1, f2) => (...args) => f2(f1(...args))
+toolbox.pipe = (...fns) => fns.reduce(_pipe)
+
+toolbox.uniquelist = list => toolbox.pipe(l => new Set(l), Array.from)(list)
+
 // IDEA: jskodi
 toolbox.imageencode = image => image.startswith('image://') ? image : 'image://' + encodeURIComponent(image) + '/'
 toolbox.imagedecode = image => decodeURIComponent(image.slice(8, -1))
