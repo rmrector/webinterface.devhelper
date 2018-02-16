@@ -378,7 +378,7 @@ input[data-readonly] {
 
 /* contentbox */
 .runningdata-section {
-	max-width: 50px;
+	max-width: 500px;
 	vertical-align: top;
 }
 @media screen and (min-width: 1101px) and (max-width: 1600px) {
