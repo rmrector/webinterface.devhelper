@@ -5,6 +5,8 @@ and access the web interface at "http://[hostname]:[port]/addons/webinterface.de
 change the 'Web interface' setting. You can also unpack it and open 'index.html' right from your
 local file system without installing it as an add-on, but remote control is still required.
 
+Latest stable [installable zip](https://github.com/rmrector/repository.rector.stuff/raw/master/latest/webinterface.devhelper-latest.zip).
+
 There is a running data section that watches InfoLabels and InfoBooleans available to skins. This
 provides access to much of the information that would be used in a debug overlay during skinning,
 and there is plenty of room to show more info without obscuring your design.
