@@ -12,7 +12,7 @@
 <script src="js/libs.js"></script>
 </head>
 <body>
-<div class="header">
+<header class="header">
 	<div class="header--title"><div><a id="maintitle" href="">Devhelper web</a>
 		<div class="header--subtitle" id="subtitle-js"></div></div>
 		<div class="header--buttons">
@@ -40,14 +40,14 @@
 				<i class="material-icons closeicon"></i></li></template>
 		</div>
 	</div>
-</div>
+</header>
 <div class="wrapper">
-	<div class="method-list">
+	<nav class="method-list">
 		<input placeholder="Find method" type="text" class="method-search" id="method-search-js">
 		<ul id="method-list-js"></ul>
 		<template id="namespace-template"><li class="namespace-li namespace-li-js"><a></a></li></template>
 		<template id="method-template"><li class="method-li nodisplay"><a></a></li></template>
-	</div>
+	</nav>
 	<div class="content-box">
 		<button type="button" id="methodlist-toggle-button-js" class="flatbutton clearbutton smallbutton methodlist-toggle"
 			title="Toggle method list display"><i class="material-icons icon">chevron_left</i></button>
@@ -83,27 +83,25 @@
 			</form></div>
 		</div>
 		<div class="content-container">
-			<div id="content-js" class="content">
-				<div class="result">
-					<p>You can add more Kodi hosts in the orange section to the far right along the top.
-					<p>Click the "Show running data" button in the right of the red section along the top to watch InfoLabels
-					and InfoBooleans, the same data available to skins.
-					<span id="log-desc-js" class="nodisplay">To use the "View Kodi log" button,
-					add "special://logpath/" as a media source (pictures, music, or videos; the file browser won't work).
-					Do note that this allows HTTP access to everything in the same folder as the log, including subdirectories.
-					On Windows this includes everything in Kodi's entire data directory.</span>
-					<span id="webpdb-desc-js" class="nodisplay">See
-					<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
-					for super Python debugging powers.</span>
-					<p>All notifications from the connected Kodi host will show up on the right, and you can explore
-					JSON-RPC methods to the left, then fill out the params and execute it below.
-					<p>URLs power much of the functionality, which can be bookmarked for quick access.
-					<p>A details box will show up at the bottom of the column to the right, showing details of certain items
-					as your mouse cursor passes over them. Param details will show up here, as well as the full JSON-RPC request over
-					the title of method "Calling" and "Result" info, and images from image URLs in requests and the
-					"Available art" running data section. Click on the item to pin the details so that your mouse cursor can roam.
-				</div>
-			</div>
+			<main id="content-js" class="content"><div class="result">
+				<p>You can add more Kodi hosts in the orange section to the far right along the top.
+				<p>Click the "Show running data" button in the right of the red section along the top to watch InfoLabels
+				and InfoBooleans, the same data available to skins.
+				<span id="log-desc-js" class="nodisplay">To use the "View Kodi log" button,
+				add "special://logpath/" as a media source (pictures, music, or videos; the file browser won't work).
+				Do note that this allows HTTP access to everything in the same folder as the log, including subdirectories.
+				On Windows this includes everything in Kodi's entire data directory.</span>
+				<span id="webpdb-desc-js" class="nodisplay">See
+				<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
+				for super Python debugging powers.</span>
+				<p>All notifications from the connected Kodi host will show up on the right, and you can explore
+				JSON-RPC methods to the left, then fill out the params and execute it below.
+				<p>URLs power much of the functionality, which can be bookmarked for quick access.
+				<p>A details box will show up at the bottom of the column to the right, showing details of certain items
+				as your mouse cursor passes over them. Param details will show up here, as well as the full JSON-RPC request over
+				the title of method "Calling" and "Result" info, and images from image URLs in requests and the
+				"Available art" running data section. Click on the item to pin the details so that your mouse cursor can roam.
+			</div></main>
 			<div class="notify-preview-box">
 				<div class="notify-box-buttons">
 					<button type="button" id="notification-pause-js" class="flatbutton clearbutton smallbutton"
@@ -139,11 +137,11 @@
 		</div>
 	</div>
 </div>
-<div class="footer">
+<footer class="footer">
 	<div class="footer-buttons"><button type="button" id="theme-switcher-js" class="flatbutton clearbutton"
 		title="Switch color theme"><i class="material-icons">format_paint</i></button></div>
-	<div class="madeby">Made by <a href="https://github.com/rmrector" target="_blank">Ryan Rector</a></div>
-</div>
+	<address class="madeby">Made by <a href="https://github.com/rmrector" target="_blank">Ryan Rector</a></address>
+</footer>
 <div class="splash" id="splash-js"></div>
 <link class="themesheet" href="css/rainbowhork.css" rel="stylesheet" title="Default theme">
 <link class="themesheet" href="css/light.css" rel="alternate stylesheet" title="Light theme">
