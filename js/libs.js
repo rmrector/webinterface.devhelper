@@ -27,6 +27,12 @@ String.prototype.startswith = function(prefixes) {
 	return false
 }
 
+Object.defineProperty(debug = new Proxy(debug, {
+	get: (target, prop) => isdebug && target[prop]
+}), 'all', {
+	set: (value) => Object.keys(debug).forEach(key => debug[key] = value)
+})
+
 const toolbox = {}
 
 toolbox.EventEmitter = function() {
@@ -203,7 +209,7 @@ toolbox.Connection.prototype.disconnect = function(removelisteners=true) {
 	this.socket.close()
 	this.socket = null
 }
-toolbox.Connection.prototype.call = function(method, params) {
+toolbox.Connection.prototype.call = function(method, params, logcall=isdebug) {
 	return new Promise((resolve, reject) => {
 		if (!this.connected()) {
 			const err = new Error("No websocket connection available")
@@ -229,6 +235,8 @@ toolbox.Connection.prototype.call = function(method, params) {
 			delete this.openmethods[id]
 			this.socket.removeEventListener('message', handlethismessage)
 			clearTimeout(timeout)
+			if (logcall)
+				console.log('Result', data)
 			if (data.result)
 				resolve(data.result)
 			else

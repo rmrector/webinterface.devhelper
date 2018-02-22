@@ -3,8 +3,8 @@
 		"UI": false,
 		"toolbox": false,
 		"hashman": false,
-		"$": false,
-		"$ls": false
+		"debug": true,
+		"isdebug": true
 	},
 	"rules": {
 		"no-unused-vars": ["warn", {"argsIgnorePattern": "^_\\w?$"}],
