@@ -2,8 +2,8 @@
 
 const TIMEOUT = 60000
 
+/** Python-like, all remaining text is added as result[count] rather than tossed */
 String.prototype.splitc = function(split, count) {
-	// Python-like, all remaining text is added as result[count] rather than tossed
 	if (!count) return this.split(split)
 	return this.split(split).reduce((result, cur) => {
 		if (count < 0)
@@ -14,14 +14,13 @@ String.prototype.splitc = function(split, count) {
 		return result
 	}, [])
 }
+/** Accepts a list of prefixes - can include regex */
 String.prototype.startswith = function(prefixes) {
-	// Accepts a list of prefixes - can include regex
 	if (typeof prefixes === "string")
 		prefixes = [prefixes]
 	for (const prefix of prefixes) {
 		if (prefix instanceof RegExp) {
-			const match = prefix.exec(this)
-			if (match && match.index == 0)
+			if (this.search(prefix) === 0)
 				return true
 		} else if (this.startsWith(prefix))
 			return true
@@ -59,19 +58,25 @@ toolbox.EventEmitter.prototype.resetevents = function() {
 }
 
 
+/**
+ * Turn an array into an object, values to keys
+ * @param {Array} arr
+ * @param {*|function(obj, key, idx)} value static value or function that calculates a value
+ */
 toolbox.arr2obj = function(arr, value) {
-	// value can be a single value for each item, or a function with the same signature
-	//  as reduce (obj, key, idx), but returns the value instead of the final object
 	return arr.reduce((obj, key, idx) => {
 		obj[key] = typeof value === 'function' ? value(obj, key, idx) : value
 		return obj
 	}, {})
 }
 
+/**
+ * Filter and map the entries of an object
+ * @param {Object} obj 
+ * @param {bool function(entry)} [filter]
+ * @param {[key, value] function(entry)} [mapper]
+ */
 toolbox.process_object = function(obj, filter, mapper) {
-	// 'filter' function receives one 'entry' argument, return true/false
-	// 'mapper' function receives one 'entry' argument, returns [key, value]
-	// Leave either empty as you need
 	if (!filter && !mapper) return obj
 	return Object.entries(obj).filter(entry => filter ? filter(entry) : true).reduce((result, entry) => {
 		if (mapper)
@@ -116,15 +121,26 @@ toolbox.rangegen = function*(start, edge, step) {
 toolbox.range = (start, edge, step) => Array.from(toolbox.rangegen(start, edge, step))
 
 const _pipe = (f1, f2) => (...args) => f2(f1(...args))
-toolbox.pipe = (...fns) => fns.reduce(_pipe)
+const pipe = (...fns) => fns.reduce(_pipe)
+toolbox.pipe = pipe
 
-toolbox.uniquelist = list => toolbox.pipe(l => new Set(l), Array.from)(list)
+const set = list => new Set(list)
+toolbox.uniquelist = pipe(set, Array.from)
 
 // IDEA: jskodi
 toolbox.imageencode = image => image.startswith('image://') ? image : 'image://' + encodeURIComponent(image) + '/'
 toolbox.imagedecode = image => decodeURIComponent(image.slice(8, -1))
 
-toolbox.Connection = function(host, wsport='9090') {
+/**
+ * A connection to Kodi
+ * @param {string|URL} host
+ * @param {Object} websocket_options
+ * @param {string} websocket_options.base Websocket server reverse proxy path
+ * @param {string} websocket_options.port
+ * @param {string} websocket_options.secure
+ * @constructor
+ */
+toolbox.Connection = function(host, {base='', port='9090', secure=false}={}) {
 	if (typeof host === 'string')
 		host = new URL(host)
 	if (host.protocol !== 'http:' && host.protocol !== 'https:')

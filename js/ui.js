@@ -33,8 +33,6 @@ const firsttheme = $('link.themesheet')
 const runningbutton = $('#running-button-js')
 const logbutton = $('#log-button-js')
 const webpdbbutton = $('#webpdb-button-js')
-const logdesc = $('#log-desc-js')
-const webpdbdesc = $('#webpdb-desc-js')
 
 runningbutton.addEventListener('click', () => hashman.set('!RunningData'))
 UI.set_isrunning = function(isrunning) {
@@ -83,11 +81,11 @@ UI.set_theme = function(themename) {
 
 UI.show_logbutton = function(visible=true) {
 	logbutton.classList.toggle('nodisplay', !visible)
-	logdesc.classList.toggle('nodisplay', !visible)
+	$('#log-desc-js').classList.toggle('nodisplay', !visible)
 }
 UI.show_pdbbutton = function(visible=true) {
 	webpdbbutton.classList.toggle('nodisplay', !visible)
-	webpdbdesc.classList.toggle('nodisplay', !visible)
+	$('#webpdb-desc-js').classList.toggle('nodisplay', !visible)
 }
 
 // connectionbox
@@ -175,7 +173,7 @@ const methodlist_toggle = $('#methodlist-toggle-button-js')
 
 methodlist_toggle.addEventListener('click', () => {
 	methodlist.parentNode.classList.toggle('nodisplay')
-	methodlist_toggle.children[0].classList.toggle('rotate50')
+	methodlist_toggle.children[0].classList.toggle('flip')
 })
 methodlist.filtered = ''
 methodsearch.addEventListener('keyup', e => {
@@ -404,7 +402,7 @@ UI.set_runningdata = function(key, obj, type) {
 			attach_popout(clone.children[0], info)
 		}
 		if (!['justkey', 'popupinfo'].includes(type)) {
-			children[1].textContent = ' ' + info.replace(/\n/g, ' // ')
+			children[1].innerHTML = ' ' + info.replace(/\n/g, '<br>')
 			children[0].classList.add('has-value')
 		}
 		ul.appendChild(clone)

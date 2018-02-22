@@ -3,7 +3,7 @@
 A web interface to debug some bits of Kodi. Enable the web server and remote control, then install
 and access the web interface at "http://[hostname]:[port]/addons/webinterface.devhelper/", no need to
 change the 'Web interface' setting. You can also unpack it and open 'index.html' right from your
-local file system without installing it as an add-on, but remote control is still required.
+local file system without installing it as an add-on.
 
 Latest stable [installable zip](https://github.com/rmrector/repository.rector.stuff/raw/master/latest/webinterface.devhelper-latest.zip).
 

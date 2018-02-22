@@ -68,7 +68,8 @@ const skinlabels = {
 		filter: ([_, value]) => value, mapper: ([key, v]) => [key.slice(17, -1), v], boollist: []},
 	videoart: {title: 'Video art', order: 1, special: 'popupinfo',
 		filter: ([_, value]) => value,
-		mapper: ([key, value]) => [key, value.includes('/') | value.includes('\\') ? toolbox.imageencode(value) : value],
+		mapper: ([key, value]) => [key, value.includes('/') | value.includes('\\')
+			? toolbox.imageencode(value) : value],
 		list: videoartworktypes.map(art => `ListItem.Art(${art})`)
 			.concat(videoartworktypes.map(art => `Container.Art(${art})`))
 			.concat(videoartworktypes.map(art => `Container.ListItem.Art(${art})`))
@@ -183,7 +184,7 @@ const skinlabels = {
 			'CanSuspend', 'CanHibernate', 'HasHiddenInput', 'CanReboot', 'ScreenSaverActive', 'Setting(hidewatched)',
 			'IsInhibit', 'HasShutdown', 'Time(00:00, 08:00)', 'Time(08:00, 16:00)', 'Time(16:00, 00:00)']
 				.sort().map(l => 'System.' + l)},
-	lightsystemlabels: {title: 'Sys Info', order: 97,
+	lightsystemlabels: {title: 'Sys Info', order: 97, visible: true,
 		list: ['CPUUsage', 'FPS', 'Memory(used)',
 			'Memory(used.percent)', 'CpuFrequency', 'ScreenMode',
 			'CurrentControl', 'CurrentControlID'].map(l => 'System.' + l)
@@ -364,7 +365,7 @@ const appdata = {
 	},
 	disconnect: function() {
 		UI.set_connectionstatus(false)
-		UI.set_connection('No host', {}, '')
+		UI.set_connection('No host', '')
 		if (this.connection)
 			this.connection.disconnect()
 	},
@@ -470,6 +471,8 @@ store._theme = JSON.parse(localStorage.getItem(THEME_KEY))
 store._scriptwindows = JSON.parse(localStorage.getItem(SCRIPTWINDOWS_KEY))
 store._switches = JSON.parse(localStorage.getItem(SWITCHES_KEY))
 
+const randomitem = (list, odds=0) => list[Math.floor(Math.random() * list.length * (1 + odds))] || ''
+
 UI.on('loaded', () => {
 	if (store._connections) {
 		Object.entries(store._connections[0]).forEach(e => appdata.add_connection(...e))
@@ -482,7 +485,7 @@ UI.on('loaded', () => {
 		appdata.connect(host)
 	}
 	const subtitles = ["It's not really for goats...", "A possible solution for number b"]
-	UI.set_subtitle(subtitles[Math.floor(Math.random() * (subtitles.length + 10))] || '')
+	UI.set_subtitle(randomitem(subtitles, 5))
 	if (store._theme)
 		UI.set_theme(store._theme)
 	if (store._switches) {
