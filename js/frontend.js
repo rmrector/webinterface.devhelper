@@ -219,15 +219,6 @@ const appdata = {
 		this.connection = con
 		if (!(host in this.connections))
 			UI.add_connection(con.host, con.host)
-		const after_connection = () => {
-			this.connection = this.connections[con.host] = con
-			UI.add_connection(con.host, con.name)
-			UI.set_connection(con.name, con.host)
-			UI.set_methodlist(con.methods)
-			UI.set_connectionstatus(true)
-			hashman.handle_hashchange()
-			store(this.connection.host, this.connection.name)
-		}
 		con.on('notification', ({description, data: {method, params: {sender, data}}}) => {
 			if (con.host === this.connection.host)
 				UI.add_notification(description, method, sender, data)
@@ -241,7 +232,16 @@ const appdata = {
 			if (con === this.connection)
 				UI.set_hostping(time)
 		})
-		con.connect().then(() => con.populatedata()).then(() => after_connection())
+		await con.connect()
+		await con.populatedata()
+
+		this.connection = this.connections[con.host] = con
+		UI.add_connection(con.host, con.name)
+		UI.set_connection(con.name, con.host)
+		UI.set_methodlist(con.methods)
+		UI.set_connectionstatus(true)
+		hashman.handle_hashchange()
+		store(this.connection.host, this.connection.name)
 	},
 	set_runningparam: function(param, visible) {
 		if (visible)
@@ -260,7 +260,7 @@ const appdata = {
 		this.runningspeed = this.runningspeed == 0 ? 1000 : this.runningspeed == 200 ? 0 : 200
 		UI.set_pingspeed(this.runningspeed)
 	},
-	setaction: function(action, params) {
+	setaction: async function(action, params) {
 		if (this.currentaction === action) {
 			UI.update_params(params)
 			if (action === '!RunningData')
@@ -276,36 +276,25 @@ const appdata = {
 					.map(([key, obj]) => [key, obj.title, obj.visible]))
 				UI.update_params(params)
 				UI.set_runningdata(false)
-				this.loadskinwindows()
-				const update_runningdata = () => {
+				// IDEA: Both of these could be refreshed when host changes
+				await this.loadskinwindows()
+				if (this.show_allart)
+					this.loadarttypes()
+				while (this.currentaction === action) {
 					if (this.apphidden) {
-						setTimeout(update_runningdata, 1000)
-						return
+						await sleep(1000)
+						continue
 					}
-					if (this.currentaction !== action) {
-						UI.set_isrunning(false)
-						return
-					}
-					const t0 = performance.now()
-					Promise.resolve().then(() => {
-						return Object.entries(skinlabels).reduce((promise, [key, value]) => promise.then(() => {
-							if (this.runningvis.includes(key))
-								return this.connection.get_infos(value.list || value.boollist, !value.list)
-								.then(data => toolbox.process_object(data, value.filter, value.mapper)).then(data => {
-									UI.set_runningdata(key, value.list ? data
-										: toolbox.arr2obj(Object.keys(data), (_, key) => '' + data[key]), value.special)
-								})
-							return Promise.resolve().then(() => UI.set_runningdata(key, false))
-						}), Promise.resolve())
-					}).then(() => UI.set_runningping(Math.trunc(performance.now() - t0)))
-					.then(() => setTimeout(update_runningdata, this.runningvis.length ? this.runningspeed : 1000))
-					.catch(err => {
-						setTimeout(update_runningdata, err.code === 'timeout' ? this.runningspeed : 5000)
+					try {
+						await this.update_runningdata()
+						await sleep(this.runningvis.length ? this.runningspeed : 1000)
+					} catch (err) {
 						if (!['no-connection', 'timeout', 'no-result'].includes(err.code))
 							console.log(err)
-					})
+						await sleep(err.code === 'timeout' ? this.runningspeed : 5000)
+					}
 				}
-				update_runningdata()
+				UI.set_isrunning(false)
 			}
 			return
 		}
@@ -313,15 +302,26 @@ const appdata = {
 		const [ns, methodpart] = action.split('.', 2)
 		UI.focus_namespace(ns)
 		if (methodpart) {
-			this.connection.introspect(action).then(data => {
-				UI.set_result(`Definition of '${action}'`, data.methods[action], 'definition')
-				UI.set_method(action, data.methods[action])
-				UI.update_params(params)
-			})
-		} else
-			UI.update_params(params)
+			const data = await this.connection.introspect(action)
+			UI.set_result(`Definition of '${action}'`, data.methods[action], 'definition')
+			UI.set_method(action, data.methods[action])
+		}
+		UI.update_params(params)
 	},
-	executemethod: function(method, params) {
+	update_runningdata: async function() {
+		const t0 = performance.now()
+		for (const [key, value] of Object.entries(skinlabels)) {
+			if (this.runningvis.includes(key)) {
+				let data = await this.connection.get_infos(value.list || value.boollist, !value.list)
+				data = toolbox.process_object(data, value.filter, value.mapper)
+				UI.set_runningdata(key, value.list ? data
+					: toolbox.arr2obj(Object.keys(data), (_, key) => '' + data[key]), value.special)
+			} else
+				UI.set_runningdata(key, false)
+		}
+		UI.set_runningping(Math.trunc(performance.now() - t0))
+	},
+	executemethod: async function(method, params) {
 		if (Object.keys(params).length !== 0)
 			hashman.set(method, params, true)
 		for (const [key, value] of Object.entries(params)) {
@@ -336,8 +336,12 @@ const appdata = {
 		}
 		const req = JSON.stringify({jsonrpc: '2.0', id: this.connection.nextid, method, params})
 		UI.set_result(`Calling '${method}' with params`, [params, req], 'calling')
-		this.connection.call(method, params).then(data => UI.set_result(`Result of '${method}'`, [data, req], 'result'))
-		.catch(err => UI.set_result(`Error calling '${method}'`, err, 'error'))
+		try {
+			const data = await this.connection.call(method, params)
+			UI.set_result(`Result of '${method}'`, [data, req], 'result')
+		} catch (err) {
+			UI.set_result(`Error calling '${method}'`, err, 'error')
+		}
 	},
 	addhost: function(host) {
 		if (!host.startsWith('http')) {
@@ -368,27 +372,26 @@ const appdata = {
 		this.connections[host] = null
 		UI.add_connection(host, name)
 	},
-	loadskinwindows: function() {
+	loadskinwindows: async function() {
 		const notwindows = ['includes', 'view', 'variables', 'defaults', 'font', 'pointer']
 		const is_skinwindow = l => l.toLowerCase().endsWith('xml') && !l.toLowerCase().startswith(notwindows)
 		if (skinlabels.visiblewindows.boollist.length)
 			skinlabels.visiblewindows.boollist = []
-		return this.connection.call('Files.GetDirectory', ['special://skin/']).then(data =>
-			data.files.filter(e => e.filetype === 'directory').map(e => e.label))
-		.then(data => data.reduce((promise, dir) => promise.then(() => {
-			if (skinlabels.visiblewindows.boollist.length)
-				throw undefined // Already found the skin directory
-			return this.connection.call('Files.GetDirectory', ['special://skin/' + dir]).then(data => {
-				if (!(data && data.files.some(item => item.label.toLowerCase() === 'home.xml')))
-					throw undefined // This isn't the skin directory
-			}).then(() => this.connection.call('Files.GetDirectory', ['special://skin/' + dir]))
-			.then(data => data.files.filter(f => is_skinwindow(f.label)).map(f => f.label))
-			.then(files => {
-				const newscripts = files.filter(f => f.startsWith('script-') && !this.scriptwindows.includes(f))
-				if (newscripts.length) {
-					this.scriptwindows = this.scriptwindows.concat(newscripts)
-					store.savescriptwindows(this.scriptwindows)
-				}
+		const skindirs = (await this.connection.call('Files.GetDirectory', ['special://skin/'])).files
+			.filter(e => e.filetype === 'directory').map(e => e.label)
+		for (const dir of skindirs) {
+			const data = await this.connection.call('Files.GetDirectory', ['special://skin/' + dir])
+			if (!(data && data.files.some(item => item.label.toLowerCase() === 'home.xml')))
+				continue // not the XML directory
+			const windowfiles = data.files.filter(f => is_skinwindow(f.label)).map(f => f.label)
+			const newscripts = windowfiles.filter(f => f.startsWith('script-') && !this.scriptwindows.includes(f))
+			if (newscripts.length) {
+				this.scriptwindows = this.scriptwindows.concat(newscripts)
+				store.savescriptwindows(this.scriptwindows)
+			}
+			skinlabels.visiblewindows.boollist = windowfiles.concat(this.scriptwindows).map(f => `Window.IsVisible(${f})`)
+			break
+		}
 	},
 	loadarttypes: async function() {
 		const allart = arttypelist2infolabels(arttypemap2list(await getall_arttypes()))

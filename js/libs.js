@@ -1,5 +1,7 @@
 'use strict'
 
+const TIMEOUT = 60000
+
 String.prototype.splitc = function(split, count) {
 	// Python-like, all remaining text is added as result[count] rather than tossed
 	if (!count) return this.split(split)
@@ -137,7 +139,7 @@ toolbox.Connection = function(host, wsport='9090') {
 	this.methods = {}
 	this.reftypes = {}
 	this.socket
-	this.interval
+	this.timer
 	this.name
 }
 toolbox.Connection.prototype = new toolbox.EventEmitter()
@@ -145,6 +147,17 @@ toolbox.Connection.prototype.connected = function() {
 	return this.socket && this.socket.readyState === WebSocket.OPEN
 }
 toolbox.Connection.prototype.connect = function() {
+	async function prepare_connection(connection) {
+		const data = await connection.call('Application.GetProperties', {properties: ['name', 'version']})
+		connection.name = data.name + ' ' + data.version.major + '.' + data.version.minor
+		if (data.version.tag !== 'stable')
+			connection.name += ' ' + data.version.tag
+		let name = await connection.call('XBMC.GetInfoLabels', {labels: ['System.FriendlyName']})
+		name = name['System.FriendlyName']
+		if (name.startsWith('Kodi (') && name.endsWith(')'))
+			name = name.slice(6, -1)
+		connection.name += ' on ' + name
+	}
 	return new Promise((resolve) => {
 		if (this.socket) {
 			resolve(this)
@@ -160,9 +173,11 @@ toolbox.Connection.prototype.connect = function() {
 			console.log(`close code : ${event.code} reason: ${event.reason}`)
 			this.emit('statuschange', {connected: false})
 		}
-		this.socket.onopen = () => {
+		this.socket.onopen = async () => {
 			console.log('connection opened')
-			this._prepare().then(() => this.emit('statuschange', {connected: true})).then(() => resolve(this))
+			await prepare_connection(this)
+			this.emit('statuschange', {connected: true})
+			resolve(this)
 		}
 		this.socket.onmessage = message => {
 			if (!message.data) {
@@ -178,25 +193,30 @@ toolbox.Connection.prototype.connect = function() {
 				return
 			}
 			if (!('id' in data)) {
-				this.emit('notification', {data,
-					description: this.notifications[data.method] && this.notifications[data.method].description})
+				const desc = this.notifications[data.method] && this.notifications[data.method].description
+				this.emit('notification', {data, description: desc})
 			} else if (!(data.id in this.openmethods))
 				console.log('Unhandled message', data)
 		}
-		this.interval = setInterval(() => {
+		const watchconnection = async () => {
 			if (this.connected()) {
 				const t0 = performance.now()
-				this.ping().then(() => this.emit('pingtime', {time: (performance.now() - t0).toFixed(1)}))
-				.catch(() => {
+				try {
+					await this.ping()
+					this.emit('pingtime', {time: (performance.now() - t0).toFixed(1)})
+				} catch (e) {
 					this.disconnect(false)
-					this.connect()
-				})
+					await this.connect()
+				}
 			} else if (this.socket.readyState === WebSocket.CLOSED) {
 				console.log('no connection, trying to reconnect')
 				this.disconnect(false)
-				this.connect().then(() => resolve(this))
+				await this.connect()
+				resolve(this)
 			}
-		}, 15000)
+			this.timer = setTimeout(watchconnection, TIMEOUT)
+		}
+		this.timer = setTimeout(watchconnection, TIMEOUT)
 	})
 }
 toolbox.Connection.prototype.disconnect = function(removelisteners=true) {
@@ -204,7 +224,7 @@ toolbox.Connection.prototype.disconnect = function(removelisteners=true) {
 		this.resetevents()
 	if (!this.socket)
 		return
-	clearInterval(this.interval)
+	clearTimeout(this.timer)
 	this.socket.onclose = null
 	this.socket.close()
 	this.socket = null
@@ -225,7 +245,7 @@ toolbox.Connection.prototype.call = function(method, params, logcall=isdebug) {
 			const err = new Error("Method call timed out after 30s")
 			err.code = 'timeout'
 			reject(err)
-		}, 30000)
+		}, TIMEOUT)
 		const handlethismessage = event => {
 			if (!event.data) return
 			try {
@@ -243,63 +263,52 @@ toolbox.Connection.prototype.call = function(method, params, logcall=isdebug) {
 				reject(data.error || {code: 'no-result'})
 		}
 		this.socket.addEventListener('message', handlethismessage)
-		this.socket.send(JSON.stringify({jsonrpc: '2.0', method, params, id}))
+		const request = {jsonrpc: '2.0', method, params, id}
+		if (logcall)
+			console.log('Request', request)
+		this.socket.send(JSON.stringify(request))
 	})
 }
-toolbox.Connection.prototype._prepare = function() {
-	return this.call('Application.GetProperties', {properties: ['name', 'version']}).then(data => {
-		this.name = data.name + ' ' + data.version.major + '.' + data.version.minor
-		if (data.version.tag !== 'stable')
-			this.name += ' ' + data.version.tag
-	}).then(() => this.call('XBMC.GetInfoLabels', {labels: ['System.FriendlyName']}))
-	.then(data => data['System.FriendlyName']).then(data => {
-		if (data.startsWith('Kodi (') && data.endsWith(')'))
-			data = data.slice(6, -1)
-		this.name += ' on ' + data
-	})
-}
-toolbox.Connection.prototype.populatedata = function() {
+toolbox.Connection.prototype.populatedata = async function() {
 	const args = {getmetadata: true}
-	return this.call('JSONRPC.Introspect', args).then(data => {
-		if (data.notifications)
-			this.notifications = data.notifications
-		if (data.types)
-			this.reftypes = dereference(extend(data.types), data.types)
-		if (data.methods)
-			this.methods = Object.entries(data.methods).reduce((result, entry) => {
-				result[entry[0]] = entry[1].description
-				return result
-			}, {})
-		return data
-	})
+	const data = await this.call('JSONRPC.Introspect', args)
+	if (data.notifications)
+		this.notifications = data.notifications
+	if (data.types)
+		this.reftypes = dereference(extend(data.types), data.types)
+	if (data.methods)
+		this.methods = toolbox.process_object(data.methods, undefined,
+			([key, {description}]) => [key, description])
+	return data
 }
-toolbox.Connection.prototype.introspect = function(methodname) {
+toolbox.Connection.prototype.introspect = async function(methodname) {
 	if (!methodname)
-		return Promise.reject(new Error('methodname is required'))
+		throw new Error('methodname is required')
 	const args = {getdescriptions: true, getmetadata: true, filterbytransport: false,
-		filter: {'getreferences': false, 'id': methodname, type: 'method'}}
-	return this.call('JSONRPC.Introspect', args).then(data => {
-		dereference(data.methods[methodname], this.reftypes)
-		return data
-	})
+		filter: {getreferences: false, id: methodname, type: 'method'}}
+	const data = await this.call('JSONRPC.Introspect', args)
+	dereference(data.methods[methodname], this.reftypes)
+	return data
 }
-toolbox.Connection.prototype.get_infos = function(infos, booleans=false) {
-	if (!infos) return Promise.resolve({})
+toolbox.Connection.prototype.get_infos = async function(infos, booleans=false) {
+	if (!infos || !infos.length) return {}
 	// Kodi doesn't like requests > 1024 bytes
 	const method = !booleans ? 'XBMC.GetInfoLabels' : 'XBMC.GetInfoBooleans'
-	const list = infos.reduce((result, item) => {
+	const listoflists = infos.reduce((result, item) => {
 		if (result.length && result[result.length - 1].join('","').length + item.length < 940)
 			result[result.length - 1].push(item)
 		else
 			result.push([item])
 		return result
 	}, [])
-	return list.reduce((promise, shortlist) => promise.then(result => {
-		return this.call(method, [shortlist]).then(data => Object.assign(result, data))
-	}), Promise.resolve({}))
+	const result = {}
+	for (const list of listoflists) {
+		Object.assign(result, await this.call(method, [list], debug.runningdata))
+	}
+	return result
 }
 toolbox.Connection.prototype.ping = function() {
-	return this.call('JSONRPC.Ping')
+	return this.call('JSONRPC.Ping', undefined, debug.ping)
 }
 
 function dereference(obj, reftypes) {
