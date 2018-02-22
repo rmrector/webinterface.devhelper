@@ -107,8 +107,9 @@ UI.set_connection = function(name, host) {
 	shortcontent.textContent = name
 	UI.imageurl_base = host + '/image/'
 	logbutton.href = host + "/vfs/special%3A%2F%2Flogpath%2Fkodi.log"
-	logbutton.target = host
-	webpdbbutton.href = host + ":5555"
+	const origin = host ? new URL(host).origin : host
+	logbutton.target = origin
+	webpdbbutton.href = origin + ":5555"
 	$ls('.connection-li', allconnections).forEach(li => {
 		li.classList.toggle('selected', li.children[0].textContent === name)
 		if (li.children[0].textContent === name) {

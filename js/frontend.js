@@ -476,7 +476,10 @@ UI.on('loaded', () => {
 		appdata.connect(store._connections[1])
 	} else {
 		store._connections = [{}, '']
-		appdata.connect(window.location.origin)
+		let host = window.location.origin
+		if (!window.location.pathname.startsWith('/addons/'))
+			host += window.location.pathname
+		appdata.connect(host)
 	}
 	const subtitles = ["It's not really for goats...", "A possible solution for number b"]
 	UI.set_subtitle(subtitles[Math.floor(Math.random() * (subtitles.length + 10))] || '')

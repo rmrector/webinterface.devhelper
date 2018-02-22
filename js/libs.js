@@ -130,9 +130,10 @@ toolbox.Connection = function(host, wsport='9090') {
 	if (host.protocol !== 'http:' && host.protocol !== 'https:')
 		throw new Error("Host must be HTTP or HTTPS")
 	toolbox.EventEmitter.call(this)
-	this.host = host.origin
-	const secure = host.protocol === 'https:'
-	this.wsurl = (secure ? 'wss://' : 'ws://') + host.hostname + ':' + wsport
+	this.host = host.origin + host.pathname
+	if (this.host.endsWith('/'))
+		this.host = this.host.slice(0, this.host.length - 1)
+	this.wsurl = (secure ? 'wss://' : 'ws://') + host.hostname + ':' + port + base
 	this.nextid = 0
 	this.openmethods = {}
 	this.notifications = {}
