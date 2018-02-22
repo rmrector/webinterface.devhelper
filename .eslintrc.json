@@ -3,6 +3,7 @@
 		"UI": false,
 		"toolbox": false,
 		"hashman": false,
+		"appdata": false,
 		"debug": true,
 		"isdebug": true
 	},

@@ -346,6 +346,9 @@ UI.add_runningsection = function(name, label) {
 		runningdatahelp = $('#runningdata-help-js')
 		runningping = $('#runningdata-ping-js')
 		runningping.addEventListener('click', () => UI.emit('togglerunningspeed'))
+		
+		$('#detailedart-js').classList.toggle('nodisplay', !appdata.show_allart)
+		$('#no-detailedart-js').classList.toggle('nodisplay', appdata.show_allart)
 	}
 	const infobox = $.clone(runningdata_section_template)
 	infobox.children[0].classList.add(name + '-js')

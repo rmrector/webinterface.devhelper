@@ -206,7 +206,8 @@ const appdata = {
 	apphidden: false,
 	runningspeed: 1000,
 	scriptwindows: [],
-	connect: function(host) {
+	show_allart: false,
+	connect: async function(host) {
 		if (!host || this.connection && this.connection.connected() && this.connection.host === host) return
 		this.disconnect()
 		let con
@@ -388,18 +389,11 @@ const appdata = {
 					this.scriptwindows = this.scriptwindows.concat(newscripts)
 					store.savescriptwindows(this.scriptwindows)
 				}
-				return files
-			})
-			.then(files => files.concat(this.scriptwindows).map(f => `Window.IsVisible(${f})`))
-			.then(data => skinlabels.visiblewindows.boollist = data)
-			.catch(err => {
-				if (err)
-					throw err
-			})
-		}), Promise.resolve())).catch(err => {
-			if (err)
-				throw err
-		})
+	},
+	loadarttypes: async function() {
+		const allart = arttypelist2infolabels(arttypemap2list(await getall_arttypes()))
+		skinlabels.videoart.list = allart.video
+		skinlabels.musicart.list = allart.music
 	}
 }
 window.addEventListener("visibilitychange", () => appdata.apphidden = document.hidden)
@@ -490,6 +484,8 @@ UI.on('loaded', () => {
 			UI.show_logbutton()
 		if (store._switches.show_pdbbutton)
 			UI.show_pdbbutton()
+		if (store._switches.show_allart)
+			appdata.show_allart = true
 	}
 	if (store._custom) {
 		set_custominfo(...store._custom)
@@ -506,16 +502,46 @@ UI.on('loaded', () => {
 	UI.hidesplash()
 })
 
-function getall_arttypes() {
+const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
+
+async function getall_arttypes() {
 	const mediatypes = {'movie': 'VideoLibrary.GetMovies', 'tvshow': 'VideoLibrary.GetTVShows',
 		'set': 'VideoLibrary.GetMovieSets', 'season': 'VideoLibrary.GetSeasons',
 		'musicvideo': 'VideoLibrary.GetMusicVideos', 'artist': 'AudioLibrary.GetArtists',
 		'album': 'AudioLibrary.GetAlbums'}
 	const result = {}
-	return Object.keys(mediatypes).reduce((promise, mediatype) => promise.then(() =>
-		appdata.connection.call(mediatypes[mediatype], {"properties":["art"]})
-		.then(data => data[mediatype + 's'].map(mov => Object.keys(mov.art).filter(at => !at.includes('.'))))
-		.then(lists => toolbox.uniquelist([].concat(...lists)))
-		.then(list => result[mediatype] = list)
-	), Promise.resolve()).then(() => result)
+	for (const type in mediatypes) {
+		const data = await appdata.connection.call(mediatypes[type], {"properties":["art"]})
+		const lists = data[type + 's'].map(mov => Object.keys(mov.art).filter(a => filterart(a)))
+		result[type] = toolbox.uniquelist([].concat(...lists))
+		await sleep(100)
+	}
+	return result
+}
+function arttypemap2list(typemap) {
+	const vidtypes = ['movie', 'tvshow', 'set', 'season', 'musicvideo']
+	const vidtypes_parent = ['tvshow', 'set', 'season']
+	return {
+		video: toolbox.uniquelist([].concat(...vidtypes.map(t => typemap[t]))
+			.concat(...vidtypes_parent.map(mapart(typemap)))).sort(),
+		music: toolbox.uniquelist([].concat(...['album', 'artist'].map(t => typemap[t]))
+			.concat(...['album', 'artist'].map(mapart(typemap)))
+			.concat(...['artist1', 'artist2', 'albumartist', 'albumartist1', 'albumartist2']
+				.map(mapart(typemap, 'artist')))).sort()
+	}
+}
+function arttypelist2infolabels(typelist) {
+	const pres = ['ListItem', 'Container', 'Container.ListItem', 'Player']
+	return toolbox.arr2obj(['video', 'music'], (_, type) => [].concat(...pres.map(mappre(typelist[type]))))
+}
+const mapart = (typemap, forcekey) => parent => typemap[forcekey || parent].map(art => parent + '.' + art)
+const mappre = allart => pre => allart.map(art => pre + `.Art(${art})`)
+
+function filterart(arttype, allnumbered=true) {
+	if (arttype.includes('.'))
+		return false
+	if (allnumbered)
+		return true
+	const match = arttype.match(/[0-9]+$/)
+	return match ? parseInt(match[0], 10) < 2 : true
 }
