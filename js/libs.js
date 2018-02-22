@@ -50,19 +50,6 @@ toolbox.EventEmitter.prototype.resetevents = function() {
 	this.callbacks = {}
 }
 
-// Stringify for display, protect against circular refs
-toolbox.stringify_display = (obj, replacer, spaces) => JSON.stringify(obj, _serializer(replacer), spaces)
-function _serializer(replacer) {
-	var stack = []
-	return function(key, value) {
-		if (stack.length > 0) {
-			var pos = stack.indexOf(this)
-			pos !== -1 ? stack.splice(pos + 1) : stack.push(this)
-			if (stack.includes(value)) value = "[Circular ref]"
-		} else stack.push(value)
-		return replacer == null ? value : replacer.call(this, key, value)
-	}
-}
 
 toolbox.arr2obj = function(arr, value) {
 	// value can be a single value for each item, or a function with the same signature

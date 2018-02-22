@@ -11,6 +11,20 @@ if (!HTMLCollection.prototype[Symbol.iterator])
 if (!NodeList.prototype[Symbol.iterator])
 	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator]
 
+/** Stringify for display, protect against circular refs */
+const stringify_display = (obj, replacer, spaces) => JSON.stringify(obj, _serializer(replacer), spaces)
+function _serializer(replacer) {
+	var stack = []
+	return function(key, value) {
+		if (stack.length > 0) {
+			var pos = stack.indexOf(this)
+			pos !== -1 ? stack.splice(pos + 1) : stack.push(this)
+			if (stack.includes(value)) value = "[Circular ref]"
+		} else stack.push(value)
+		return replacer == null ? value : replacer.call(this, key, value)
+	}
+}
+
 const UI = {}
 toolbox.EventEmitter.call(UI)
 UI.__proto__ = new toolbox.EventEmitter()
@@ -411,7 +425,7 @@ UI.set_result = function(title, data, type) {
 		data = data[0]
 	}
 	try {
-		inline_images(children[1], toolbox.stringify_display(data, undefined, 2))
+		inline_images(children[1], stringify_display(data, undefined, 2))
 	} catch (TypeError) {
 		console.log(data)
 	}
@@ -602,7 +616,7 @@ UI.set_method = function(name, method) {
 	let count = 0
 	for (let param of method.params) {
 		count += 1
-		ExecutionToolbox.addparam(param, count, toolbox.stringify_display(param, undefined, 2))
+		ExecutionToolbox.addparam(param, count, stringify_display(param, undefined, 2))
 	}
 	executebutton.tabIndex = count + 1
 }
