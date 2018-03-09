@@ -265,6 +265,7 @@ input[data-readonly] {
 }
 .footer .footer-buttons {
 	margin-top: -10px;
+	display: flex;
 }
 .footer .footer-buttons button {
 	height: 40px;
@@ -290,6 +291,44 @@ input[data-readonly] {
 }
 .fadeout {
 	opacity: 0;
+}
+.dialog {
+	background-color: hsla(0, 0%, 0%, 0.5);
+	transition: opacity 0.2s;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 10;
+}
+.dialog-window {
+	background-color: white;
+	box-shadow: 2px 2px 8px 4px hsla(0, 0%, 0%, 0.35);
+	width: 350px;
+	height: fit-content;
+	padding: 10px;
+	margin: auto;
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+.dialog-window h1 {
+	margin-bottom: 10px;
+}
+.settings-list li {
+	padding: 5px;
+}
+.settings-list li input {
+	margin-right: 5px;
+}
+.close-button {
+	width: 100px;
+	position: absolute;
+	right: 10px;
+	bottom: 10px;
 }
 
 /* connectionbox */
@@ -523,6 +562,7 @@ input[data-readonly] {
 
 .action-button {
 	background-color: #555555;
+	padding: 10px;
 	transition: box-shadow 0.5s, background-color 0.5s;
 	margin-top: 10px;
 }

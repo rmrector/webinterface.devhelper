@@ -44,14 +44,14 @@ toolbox.EventEmitter.prototype.on = function(event_name, callback) {
 	this.callbacks[event_name].push(callback)
 	return this // chainable
 }
-toolbox.EventEmitter.prototype.emit = function(event_name, data) {
-	this._dispatch(event_name, data)
+toolbox.EventEmitter.prototype.emit = function(event_name, ...data) {
+	this._dispatch(event_name, ...data)
 	return this
 }
-toolbox.EventEmitter.prototype._dispatch = function(event_name, data) {
+toolbox.EventEmitter.prototype._dispatch = function(event_name, ...data) {
 	let events = this.callbacks[event_name]
 	if(!events) return
-	events.forEach(e => e(data))
+	events.forEach(e => e(...data))
 }
 toolbox.EventEmitter.prototype.resetevents = function() {
 	this.callbacks = {}

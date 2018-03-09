@@ -5,7 +5,7 @@
 // TODO: ctrl+click InfoLabels and Booleans to add to custom list
 
 // TODO: Switch to turn ListItem InfoLabels into Container.ListItem, maybe a few switches to only check classes
-//  of artwork (Player/ListItem/Container/Container.ListItem, artist+albumartist, fanart# > 2)
+//  of artwork (Player/ListItem/Container/Container.ListItem)
 
 // TODO: Include more script windows from add-ons
 // Window.Property(xmlfile) will have a full path to the window file if it's not in the current skin,
@@ -37,7 +37,6 @@ const hashman = {handle_hashchange: function() {
 }}
 window.addEventListener("hashchange", hashman.handle_hashchange)
 
-// TODO: Build the list of all available art (available in the library, but plugins can have others)
 // TODO: Somehow build the info lists automatically, at least most of them
 
 // INFO: Integer labels don't work, like "Player.Progress"
@@ -417,6 +416,7 @@ UI.on('removehost', host => appdata.removehost(host))
 UI.on('selecthost', host => appdata.connect(host))
 UI.on('disconnect', () => appdata.disconnect())
 UI.on('themechange', themename => store.savetheme(themename))
+UI.on('setswitch', (name, value) => store.setswitch(name, value))
 UI.on('setcustominfo', ({labels, booleans}) => {
 	set_custominfo(labels, booleans)
 	store.savecustom(labels, booleans)
@@ -493,8 +493,10 @@ UI.on('loaded', () => {
 			UI.show_logbutton()
 		if (store._switches.show_pdbbutton)
 			UI.show_pdbbutton()
-		if (store._switches.show_allart)
+		if (store._switches.show_allart) {
 			appdata.show_allart = true
+			UI.set_showallart()
+		}
 	}
 	if (store._custom) {
 		set_custominfo(...store._custom)
@@ -514,6 +516,7 @@ UI.on('loaded', () => {
 const sleep = ms => new Promise(resolve => setTimeout(resolve, ms))
 
 async function getall_arttypes() {
+	// In the library, but plugins can provide other artwork types
 	const mediatypes = {'movie': 'VideoLibrary.GetMovies', 'tvshow': 'VideoLibrary.GetTVShows',
 		'set': 'VideoLibrary.GetMovieSets', 'season': 'VideoLibrary.GetSeasons',
 		'musicvideo': 'VideoLibrary.GetMusicVideos', 'artist': 'AudioLibrary.GetArtists',
@@ -531,7 +534,7 @@ function arttypemap2list(typemap) {
 	const vidtypes = ['movie', 'tvshow', 'set', 'season', 'musicvideo']
 	const vidtypes_parent = ['tvshow', 'set', 'season']
 	return {
-		video: toolbox.uniquelist([].concat(...vidtypes.map(t => typemap[t]))
+		video: toolbox.uniquelist(['thumb'].concat(...vidtypes.map(t => typemap[t]))
 			.concat(...vidtypes_parent.map(mapart(typemap)))).sort(),
 		music: toolbox.uniquelist([].concat(...['album', 'artist'].map(t => typemap[t]))
 			.concat(...['album', 'artist'].map(mapart(typemap)))

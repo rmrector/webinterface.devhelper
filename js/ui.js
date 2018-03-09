@@ -82,10 +82,15 @@ UI.set_theme = function(themename) {
 UI.show_logbutton = function(visible=true) {
 	logbutton.classList.toggle('nodisplay', !visible)
 	$('#log-desc-js').classList.toggle('nodisplay', !visible)
+	$('#switch-logbutton-js').checked = visible
 }
 UI.show_pdbbutton = function(visible=true) {
 	webpdbbutton.classList.toggle('nodisplay', !visible)
 	$('#webpdb-desc-js').classList.toggle('nodisplay', !visible)
+	$('#switch-webpdb-js').checked = visible
+}
+UI.set_showallart = function(visible=true) {
+	$('#switch-fullart-js').checked = visible
 }
 
 // connectionbox
@@ -678,7 +683,7 @@ UI.set_runningsections = function(params) {
 	for (let param of params) {
 		count += 1
 		const checkbox = ExecutionToolbox.addparam({name: param[0], type: 'bool'}, count, undefined, param[1])
-		checkbox.addEventListener('change', _ => {
+		checkbox.addEventListener('change', () => {
 			UI.emit('set_runningparam', {param: param[0], visible: checkbox.checked})
 			if (param[0].startsWith('custom')) {
 				if (param[0].endsWith('labels'))
@@ -699,3 +704,10 @@ UI.set_custominfo_options = function(labels, booleans) {
 	if (booleans)
 		custombooleans.value = booleans.join('\n')
 }
+
+const dialogwindow = $('#dialog-js')
+$('#open-settings-button-js').addEventListener('click', () => dialogwindow.classList.remove('nodisplay'))
+$('#close-settings-button-js').addEventListener('click', () => dialogwindow.classList.add('nodisplay'))
+$('#switch-fullart-js').addEventListener('change', e => UI.emit('setswitch', 'show_allart', e.target.checked))
+$('#switch-logbutton-js').addEventListener('change', e => UI.emit('setswitch', 'show_logbutton', e.target.checked))
+$('#switch-webpdb-js').addEventListener('change', e => UI.emit('setswitch', 'show_pdbbutton', e.target.checked))

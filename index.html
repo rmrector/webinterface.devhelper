@@ -96,7 +96,8 @@ let debug = {
 				and InfoBooleans, the same data available to skins.
 				<span id="log-desc-js" class="nodisplay">To use the "View Kodi log" button,
 				add "special://logpath/" as a media source (pictures, music, or videos; the file browser won't work).
-				Do note that this allows HTTP access to everything in the same folder as the log, including subdirectories.
+				Do note that this can allow HTTP requests to Kodi to read everything in the same folder
+				as the log, including subdirectories.
 				On Windows this includes everything in Kodi's entire data directory.</span>
 				<span id="webpdb-desc-js" class="nodisplay">See
 				<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
@@ -129,8 +130,10 @@ let debug = {
 					available to skins on the current window.
 					<p id="no-detailedart-js">"Video/Music art" will show only 3 fanart ('fanart', 'fanart1', 'fanart2'),
 					but more may be set. Ditto "artist"/"artist1" and "albumartist"/"albumartist1".
-					<p id="detailedart-js" class="nodisplay">Initial requests will take more time as artwork types are loaded in the background. If you add a new art type in the Kodi library, refresh the page so
-					that Devhelper web rebuilds its art type lists.
+					<p id="detailedart-js" class="nodisplay">Initial requests will take more time as
+					artwork types are loaded from the library in the background. If you add a new
+					art type in the Kodi library, refresh the page so that <em>Devhelper web</em>
+					rebuilds its art type lists.
 					<p>Custom InfoLabels and InfoBooleans can be entered one per line.
 					<p>Click on the ping time ('##ms') in the top-right of this box to update faster.</div>
 			</div></template>
@@ -147,11 +150,28 @@ let debug = {
 	</div>
 </div>
 <footer class="footer">
-	<div class="footer-buttons"><button type="button" id="theme-switcher-js" class="flatbutton clearbutton"
-		title="Switch color theme"><i class="material-icons">format_paint</i></button></div>
+	<div class="footer-buttons">
+		<button type="button" id="theme-switcher-js" class="flatbutton clearbutton"
+			title="Switch color theme"><i class="material-icons">format_paint</i></button>
+		<button type="button" id="open-settings-button-js" class="flatbutton clearbutton"
+			title="Open settings"><i class="material-icons">settings</i></button>
+	</div>
 	<address class="madeby">Made by <a href="https://github.com/rmrector" target="_blank">Ryan Rector</a></address>
 </footer>
 <div class="splash" id="splash-js"></div>
+<div class="dialog nodisplay" id="dialog-js">
+	<div class="dialog-window">
+		<h1>Settings</h1>
+		<ul class="settings-list">
+			<li><label><input type="checkbox" id="switch-fullart-js" />Fetch full art list</label></li>
+			<li><label><input type="checkbox" id="switch-logbutton-js" />Show log button</label></li>
+			<li><label><input type="checkbox" id="switch-webpdb-js" />Show Web PDB button</label></li>
+		</ul>
+		<p style="padding-top: 10px; width: 240px;"><i>Refresh page after changing a switch</i></p>
+		<button type="button" id="close-settings-button-js" class="flatbutton action-button close-button">
+			Close</button>
+	</div>
+</div>
 <link class="themesheet" href="css/rainbowhork.css" rel="stylesheet" title="Default theme">
 <link class="themesheet" href="css/light.css" rel="alternate stylesheet" title="Light theme">
 <script src="js/ui.js"></script>
