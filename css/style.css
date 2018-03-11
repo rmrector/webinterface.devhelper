@@ -1,161 +1,54 @@
-html {
-	box-sizing: border-box;
-}
-*, *:before, *:after {
-	margin: 0;
-	padding: 0;
-	box-sizing: inherit;
-}
+/* $RESET Fix box and simple reset + base */
+html { box-sizing: border-box; }
+*, *:before, *:after { box-sizing: inherit; margin: 0; padding: 0; }
+ul { list-style: none; }
+
 body {
 	font-family: 'Roboto', sans-serif;
-}
-pre {
-	font-family: 'Roboto Mono', monospace;
-	font-size: 13.5px;
-	line-height: 120%;
 }
 *::-webkit-scrollbar-track, *::-webkit-scrollbar-corner {
 	background-color: transparent;
 }
-
 *::-webkit-scrollbar {
-	width: 6px;
 	height: 6px;
+	width: 6px;
 }
-
 *::-webkit-scrollbar-thumb {
-	box-shadow: inset 0 0 3px rgba(0, 0, 0, .3);
 	background-color: hsla(0, 0%, 50%, 0.5);
+	box-shadow: inset 0 0 3px rgba(0, 0, 0, .3);
 }
 
-ul {
-	list-style: none;
-}
-
-i.material-icons {
-	vertical-align: -6px;
-}
-
-.icon {
-	display: inline-block;
-	font-size: 24px;
-	font-style: normal;
-	line-height: 1;
-	width: 24px;
-	height: 24px;
-	transition: transform 0.75s;
-}
-.icon.rotate {
-	transform: rotate(0.375turn);
-}
-.icon.rotate50 {
-	transform: rotate(-0.5turn);
-}
-.icon.flip {
-	transform: scaleX(-1);
-}
-
-.forever-rotate {
-	animation: rotation 2.5s infinite cubic-bezier(0.65, 0.05, 0.36, 1);
-}
-@keyframes rotation {
-	from { transform: rotate(0deg); }
-	to { transform: rotate(359deg); }
-}
-
-input:required {
-	outline: 1px solid hsl(0, 50%, 60%);
-	outline-offset: unset;
-}
-input[data-readonly] {
-	pointer-events: none;
-}
-
-.flatbutton {
-	border: none;
-	color: white;
-	padding: 12px;
-	text-align: center;
-	text-decoration: none;
-	display: inline-block;
-	font-size: 14px;
-	height: 48px;
-	min-width: 48px;
-	transition: box-shadow 0.5s;
-}
-.flatbutton:hover {
-	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
-}
-
-.clearbutton {
-	background-color: transparent;
-	transition: box-shadow 0.5s, background-color 0.5s;
-	outline: none;
-	color: hsl(0, 0%, 20%);
-}
-.clearbutton:hover {
-	background-color: hsla(0, 0%, 90%, 0.5);
-}
-
-.smallbutton {
-	padding: 0;
-	min-width: unset;
-	height: unset;
-	border-radius: 3px;
-	color: hsl(0, 0%, 40%);
-}
-
-.smallbutton-text {
-	padding: 2px;
-	min-width: 28px;
-	height: 28px;
-	border-radius: 3px;
-	color: hsl(0, 0%, 40%);
-}
-
-.nodisplay {
-	display: none !important;
-}
-
-.header a, .method-list a, .footer a, .action-container a {
-	text-decoration: none;
-}
-.header--title, .conbox--content, .conbox--shortcontent, .method-list, .content, .notifications,
-.footer, .execution-container {
+/* $LAYOUT */
+.header--titleandbuttons, .conbox--content, .conbox--shortcontent, .method-list, .content,
+.notifications, .footer, .execution-container {
 	padding: 10px;
 }
 .header {
-	display: flex;
-	z-index: 2;
-	position: relative;
 	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	display: flex;
+	position: relative;
+	z-index: 2;
 }
-	.header--title {
-		height: 60px;
-		flex: 1;
+	.header--titleandbuttons {
 		display: flex;
+		flex: 1;
+		height: 60px;
 	}
-	.header--title > div:first-of-type {
+	.header--titles {
 		flex: 1;
 	}
 .conbox {
 	width: 400px;
 }
-.footer {
-	height: 40px;
-	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
-	z-index: 2;
-	position: relative;
-}
 .wrapper {
-	height: calc(100vh - 100px);
 	align-items: stretch; /* works on Chrome, doesn't seem to on FF, setting height in media query */
 	display: flex;
 	flex-flow: row wrap-reverse;
+	height: calc(100vh - 100px);
 }
 .method-list {
-	flex: 1 230px;
 	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	flex: 1 230px;
 	position: relative;
 	z-index: 1;
 }
@@ -166,27 +59,11 @@ input[data-readonly] {
 	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
 	min-height: 50px;
 }
-
-.inline-li {
-	padding: 5px;
-	margin: 5px;
-	background-color: hsla(0, 0%, 55%, 0.35);
-	border-radius: 5px;
-	display: inline-block;
-}
-
-.inline-popout {
-	padding: 1px;
-}
-.has-popoutinfo {
-	border: 1px solid transparent;
-	cursor: default;
-}
-.has-popoutinfo:hover {
-	border: 1px solid hsl(0, 0%, 50%);
-}
-.has-popoutinfo.selected {
-	box-shadow: 0px 0px 5px 2px hsla(222, 100%, 50%, 0.75);
+.footer {
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	height: 40px;
+	position: relative;
+	z-index: 2;
 }
 
 @media screen and (max-width: 800px) {
@@ -211,20 +88,20 @@ input[data-readonly] {
 		position: relative;
 	}
 	.conbox--content {
-		position: absolute;
 		bottom: -200px;
 		box-shadow: -2px 2px 2px 0px hsla(0, 0%, 0%, 0.25);
+		position: absolute;
 	}
 	.method-list {
 		overflow-y: auto;
 		height: 100%;
 	}
 	.content-box {
-		height: 100%;
-		position: relative;
 		display: flex;
 		flex-flow: column;
+		height: 100%;
 		overflow: hidden;
+		position: relative;
 	}
 	.content-box .content-container {
 		display: flex;
@@ -246,12 +123,130 @@ input[data-readonly] {
 	}
 }
 
-/* index */
-.header--title {
+/* $GENERAL */
+pre {
+	font-family: 'Roboto Mono', monospace;
+	font-size: 13.5px;
+	line-height: 120%;
+}
+a {
+	text-decoration: none;
+}
+input:required {
+	outline: 1px solid hsl(0, 50%, 60%);
+	outline-offset: unset;
+}
+/* data is still interesting, just changed another way. */
+input[data-readonly] {
+	pointer-events: none;
+}
+
+.nodisplay {
+	display: none !important;
+}
+
+i.material-icons {
+	vertical-align: -6px;
+}
+
+.icon {
+	display: inline-block;
+	font-size: 24px;
+	font-style: normal;
+	height: 24px;
+	line-height: 1;
+	transition: transform 0.75s;
+	width: 24px;
+}
+.icon.rotate {
+	transform: rotate(0.375turn);
+}
+.icon.rotate50 {
+	transform: rotate(-0.5turn);
+}
+.icon.flip {
+	transform: scaleX(-1);
+}
+
+.forever-rotate {
+	animation: rotation 2.5s infinite cubic-bezier(0.65, 0.05, 0.36, 1);
+}
+@keyframes rotation {
+	from { transform: rotate(0deg); }
+	to { transform: rotate(359deg); }
+}
+
+/* $BUTTONS */
+.flatbutton {
+	border: none;
+	color: white;
+	display: inline-block;
+	font-size: 14px;
+	height: 48px;
+	min-width: 48px;
+	padding: 12px;
+	text-align: center;
+	text-decoration: none;
+	transition: box-shadow 0.5s;
+}
+.flatbutton:hover {
+	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+}
+
+.clearbutton {
+	background-color: transparent;
+	color: hsl(0, 0%, 20%);
+	outline: none;
+	transition: box-shadow 0.5s, background-color 0.5s;
+}
+.clearbutton:hover {
+	background-color: hsla(0, 0%, 90%, 0.5);
+}
+
+.smallbutton, .smalbutton-text {
+	border-radius: 3px;
+	color: hsl(0, 0%, 40%);
+}
+.smallbutton {
+	height: unset;
+	min-width: unset;
+	padding: 0;
+}
+.smallbutton-text {
+	height: 28px;
+	min-width: 28px;
+	padding: 2px;
+}
+
+/* Used in connectionbox and executionbox */
+.inline-li {
+	background-color: hsla(0, 0%, 55%, 0.35);
+	border-radius: 5px;
+	display: inline-block;
+	padding: 5px;
+	margin: 5px;
+}
+/* Used in connectionbox and contentbox */
+.inline-popout {
+	padding: 1px;
+}
+.has-popoutinfo {
+	border: 1px solid transparent;
+	cursor: default;
+}
+.has-popoutinfo:hover {
+	border: 1px solid hsl(0, 0%, 50%);
+}
+.has-popoutinfo.selected {
+	box-shadow: 0px 0px 5px 2px hsla(222, 100%, 50%, 0.75);
+}
+
+/* $Sindex */
+.header--titleandbuttons {
 	font-size: 26px;
 	font-weight: bold;
-	padding-top: 5px;
 	padding-bottom: 15px;
+	padding-top: 5px;
 }
 .header--subtitle {
 	font-size: initial;
@@ -264,13 +259,13 @@ input[data-readonly] {
 	display: flex;
 }
 .footer .footer-buttons {
-	margin-top: -10px;
 	display: flex;
+	margin-top: -10px;
 }
 .footer .footer-buttons button {
+	box-shadow: unset;
 	height: 40px;
 	padding-top: 9px;
-	box-shadow: unset;
 }
 .footer .madeby {
 	width: 100%;
@@ -280,13 +275,13 @@ input[data-readonly] {
 	color: hsl(0, 0%, 20%);
 }
 .splash {
-	position: absolute;
 	background-color: white;
-	transition: opacity 0.2s;
-	top: 0;
+	bottom: 0;
+	position: absolute;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	top: 0;
+	transition: opacity 0.2s;
 	z-index: 10;
 }
 .fadeout {
@@ -294,26 +289,26 @@ input[data-readonly] {
 }
 .dialog {
 	background-color: hsla(0, 0%, 0%, 0.5);
-	transition: opacity 0.2s;
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
 	bottom: 0;
+	left: 0;
+	position: absolute;
+	right: 0;
+	top: 0;
+	transition: opacity 0.2s;
 	z-index: 10;
 }
 .dialog-window {
 	background-color: white;
-	box-shadow: 2px 2px 8px 4px hsla(0, 0%, 0%, 0.35);
-	width: 350px;
-	height: fit-content;
-	padding: 10px;
-	margin: auto;
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
 	bottom: 0;
+	box-shadow: 2px 2px 8px 4px hsla(0, 0%, 0%, 0.35);
+	height: fit-content;
+	left: 0;
+	padding: 10px;
+	position: absolute;
+	margin: auto;
+	right: 0;
+	top: 0;
+	width: 350px;
 }
 .dialog-window h1 {
 	margin-bottom: 10px;
@@ -325,47 +320,47 @@ input[data-readonly] {
 	margin-right: 5px;
 }
 .close-button {
-	width: 100px;
+	bottom: 10px;
 	position: absolute;
 	right: 10px;
-	bottom: 10px;
+	width: 100px;
 }
 
-/* connectionbox */
+/* $Sconnectionbox */
 .conbox--shortcontent {
-	text-align: right;
 	display: flex;
+	text-align: right;
 }
 	.conbox--shortcontent-message, .conbox--input {
-		flex-grow: 1;
-		display: flex;
 		align-items: center;
+		display: flex;
+		flex-grow: 1;
 		justify-content: flex-end;
 	}
 .conbox--shortcontent p {
 	margin: 0;
 }
 .conbox--button {
-	margin: -4px;
-	margin-right: 4px;
-	margin-left: 4px;
 	background-color: hsl(0, 60%, 50%);
+	margin: -4px;
+	margin-left: 4px;
+	margin-right: 4px;
 }
 	.conbox--button.connected {
 		background-color: hsl(120, 60%, 30%);
 	}
 .conbox--content {
-	width: 100%;
 	height: 200px;
 	overflow-y: auto;
+	width: 100%;
 }
 
 .connection-li {
-	cursor: default;
 	border: 1px solid transparent;
+	cursor: default;
 	margin: 1px;
-	transition: background-color 0.5s;
 	position: relative;
+	transition: background-color 0.5s;
 }
 .connection-li .closeicon::after {
 	content: "delete";
@@ -381,15 +376,15 @@ input[data-readonly] {
 	background-color: hsla(0, 0%, 100%, 0.75);
 }
 .connection-li .closeicon {
-	position: absolute;
-	top: 3px;
-	right: 1px;
-	color: hsl(0, 60%, 50%);
 	background-color: hsla(0, 0%, 0%, 0.75);
 	border-radius: 14px;
+	color: hsl(0, 60%, 50%);
 	display: none;
-	padding: 2px;
 	margin-top: -2.5px;
+	padding: 2px;
+	position: absolute;
+	right: 1px;
+	top: 3px;
 	transition: background-color 0.25s;
 }
 .connection-li:hover .closeicon {
@@ -399,10 +394,10 @@ input[data-readonly] {
 	background-color: hsla(0, 0%, 50%, 0.75);
 }
 
-/* methodlist */
+/* $Smethodlist */
 .method-list ul li {
-	padding: 5px 0;
 	font-size: 14px;
+	padding: 5px 0;
 }
 .method-list a {
 	color: black;
@@ -418,7 +413,7 @@ input[data-readonly] {
 	top: 0;
 }
 
-/* contentbox */
+/* $Scontentbox */
 .runningdata-section {
 	max-width: 500px;
 	vertical-align: top;
@@ -440,10 +435,10 @@ input[data-readonly] {
 	content: ":";
 }
 .result, .notification, .runningdata {
-	margin: 5px;
-	padding: 5px;
 	background-color: hsla(0, 0%, 0%, 0.10);
+	margin: 5px;
 	max-width: 100%;
+	padding: 5px;
 }
 .result p, .runningdata p {
 	margin-top: 0.5em;
@@ -469,11 +464,11 @@ input[data-readonly] {
 	flex: 1 1 auto;
 }
 .preview {
-	flex: 0 0 auto;
-	color: white;
-	max-height: 400px;
 	background-color: hsla(0, 0%, 0%, 0.75);
 	border-radius: 5px 0 0;
+	color: white;
+	flex: 0 0 auto;
+	max-height: 400px;
 	overflow-y: auto;
 	word-break: break-word;
 }
@@ -483,42 +478,42 @@ input[data-readonly] {
 		word-break: break-all;
 	}
 	.preview img {
-		max-width: 100%;
-		max-height: 350px;
 		display: block;
 		margin: auto;
+		max-height: 350px;
+		max-width: 100%;
 	}
 .runningping {
+	color: hsl(0, 0%, 30%);
 	position: absolute;
 	right: 5px;
-	color: hsl(0, 0%, 30%);
 }
 .runningping.supafast {
-	font-size: 18px;
 	color: hsl(0, 100%, 30%);
+	font-size: 18px;
 }
 .runningping.fast {
-	font-size: 18px;
 	color: hsl(30, 90%, 40%);
+	font-size: 18px;
 }
 .notify-box-buttons {
 	height: 0;
 	position: relative;
 }
 .notify-box-buttons button {
+	margin: 8px;
 	position: absolute;
 	right: 0;
-	margin: 8px;
 }
 .notifications-paused {
 	color: hsl(0, 50%, 35%);
 }
 
-/* executionbox */
+/* $Sexecutionbox */
 .execution-container form {
+	align-items: stretch;
 	display: flex;
 	flex-flow: row wrap;
-	align-items: stretch;
 	width: 100%;
 }
 .method-title .title {
@@ -548,31 +543,31 @@ input[data-readonly] {
 		margin: 0 auto;
 	}
 	.param-li input.toggler {
+		color: transparent;
 		cursor: default;
 		max-width: 110px;
-		color: transparent;
 		text-shadow: 0 0 0 black;
 	}
 	.param-li .switcher {
+		display: inline-block;
 		position: absolute;
 		right: 2px;
 		top: 2px;
-		display: inline-block;
 	}
 
 .action-button {
 	background-color: #555555;
+	margin-top: 10px;
 	padding: 10px;
 	transition: box-shadow 0.5s, background-color 0.5s;
-	margin-top: 10px;
 }
 .action-button:hover {
 	background-color: #777777;
 }
 .execution--bigbox {
-	margin-top: 5px;
-	width: 250px;
-	min-width: 250px;
 	height: calc(100% - 24px);
+	margin-top: 5px;
 	min-height: 63px;
+	min-width: 250px;
+	width: 250px;
 }
