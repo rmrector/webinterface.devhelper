@@ -38,7 +38,7 @@ body {
 		flex: 1;
 	}
 .conbox {
-	width: 400px;
+	width: 500px;
 }
 .wrapper {
 	align-items: stretch; /* works on Chrome, doesn't seem to on FF, setting height in media query */
@@ -327,6 +327,12 @@ i.material-icons {
 }
 
 /* $Sconnectionbox */
+.conbox--content input {
+	margin-left: 5px;
+}
+.conbox--content .hostinput {
+	width: 200px;
+}
 .conbox--shortcontent {
 	display: flex;
 	text-align: right;

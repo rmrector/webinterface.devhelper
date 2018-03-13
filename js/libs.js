@@ -148,7 +148,7 @@ toolbox.Connection = function(host, {base='', port='9090', secure=false}={}) {
 	toolbox.EventEmitter.call(this)
 	this.host = host.origin + host.pathname
 	if (this.host.endsWith('/'))
-		this.host = this.host.slice(0, this.host.length - 1)
+		this.host = this.host.slice(0, -1)
 	this.wsurl = (secure ? 'wss://' : 'ws://') + host.hostname + ':' + port + base
 	this.nextid = 0
 	this.openmethods = {}
