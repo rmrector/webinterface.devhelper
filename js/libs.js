@@ -312,7 +312,7 @@ toolbox.Connection.prototype.get_infos = async function(infos, booleans=false) {
 	// Kodi doesn't like requests > 1024 bytes
 	const method = !booleans ? 'XBMC.GetInfoLabels' : 'XBMC.GetInfoBooleans'
 	const listoflists = infos.reduce((result, item) => {
-		if (result.length && result[result.length - 1].join('","').length + item.length < 940)
+		if (result.length && result[result.length - 1].join('","').length + item.length < 930)
 			result[result.length - 1].push(item)
 		else
 			result.push([item])
