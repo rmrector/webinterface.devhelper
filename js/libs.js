@@ -72,7 +72,7 @@ toolbox.arr2obj = function(arr, value) {
 
 /**
  * Filter and map the entries of an object
- * @param {Object} obj 
+ * @param {Object} obj
  * @param {bool function(entry)} [filter]
  * @param {[key, value] function(entry)} [mapper]
  */

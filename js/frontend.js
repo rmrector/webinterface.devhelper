@@ -6,12 +6,16 @@
 
 // TODO: Switch to turn ListItem InfoLabels into Container.ListItem, maybe a few switches to only check classes
 //  of artwork (Player/ListItem/Container/Container.ListItem)
+// ListItem infos could also have a switch for Container
 
 // TODO: Include more script windows from add-ons
 // Window.Property(xmlfile) will have a full path to the window file if it's not in the current skin,
 //  loaded from the add-on instead
 
 // TODO: maybe easier to grok media listings would be helpful
+
+// TODO: Window.IsActive at the top of Visible Windows with a different style
+//  Will double the size of the JSON-RPC request
 
 const hashman = {handle_hashchange: function() {
 	let hash = window.location.hash
@@ -214,6 +218,7 @@ const appdata = {
 		try {
 			con = new toolbox.Connection(host)
 		} catch(e) {
+			console.log(e)
 			return
 		}
 		this.connection = con
@@ -484,8 +489,9 @@ UI.on('loaded', () => {
 			host += window.location.pathname
 		appdata.connect(host)
 	}
-	const subtitles = ["It's not really for goats...", "A possible solution for number b"]
-	UI.set_subtitle(randomitem(subtitles, 5))
+	const subtitles = ["It's not really for goats...", "A possible solution for number b",
+		"which has its own super-teeny-tiny coffee bar inside..."]
+	UI.set_subtitle(randomitem(subtitles, 10))
 	if (store._theme)
 		UI.set_theme(store._theme)
 	if (store._switches) {
@@ -524,7 +530,7 @@ async function getall_arttypes() {
 	const result = {}
 	for (const type in mediatypes) {
 		const data = await appdata.connection.call(mediatypes[type], {"properties":["art"]})
-		const lists = data[type + 's'].map(mov => Object.keys(mov.art).filter(a => filterart(a)))
+		const lists = data[type + 's'].map(mov => Object.keys(mov.art).filter(filterart))
 		result[type] = toolbox.uniquelist([].concat(...lists))
 		await sleep(100)
 	}
