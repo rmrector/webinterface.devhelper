@@ -246,22 +246,39 @@ toolbox.Connection.prototype.disconnect = function(removelisteners=true) {
 	this.socket.close()
 	this.socket = null
 }
-toolbox.Connection.prototype.call = function(method, params, logcall=isdebug) {
+toolbox.Connection.prototype.call = function(method, params, id=undefined, logcall=isdebug) {
 	return new Promise((resolve, reject) => {
 		if (!this.connected()) {
-			const err = new Error("No websocket connection available")
-			err.code = 'no-connection'
-			reject(err)
+			reject(build_error('no-connection', "Not connected to Kodi"))
 			return
 		}
-		const id = this.nextid++
+		if (id == null)
+			id = this.nextid++
+		else if (id in this.openmethods) {
+			reject(build_error('duplicate-open-request'))
+			return
+		}
+		const request = {jsonrpc: '2.0', method, params, id}
+		if (logcall)
+			console.log('Request', request)
+		const strequest = JSON.stringify(request)
+		if (strequest.length > 1024) {
+			reject(build_error('too-long', "Request is too long for Kodi websocket"))
+			// TODO: No CORS, only works on same host
+			if (false) resolve(this.http_call(request).then(data => {
+				if (logcall)
+					console.log('Result', data)
+				if (data.result)
+					return data.result
+				throw data.error || build_error('no-result')
+			}))
+			return
+		}
 		this.openmethods[id] = {method, params}
 		const timeout = setTimeout(() => {
 			delete this.openmethods[id]
 			this.socket.removeEventListener('message', handlethismessage)
-			const err = new Error("Method call timed out after 30s")
-			err.code = 'timeout'
-			reject(err)
+			reject(build_error('timeout', "Method call timed out after 30s"))
 		}, TIMEOUT)
 		const handlethismessage = event => {
 			if (!event.data) return
@@ -277,14 +294,16 @@ toolbox.Connection.prototype.call = function(method, params, logcall=isdebug) {
 			if (data.result)
 				resolve(data.result)
 			else
-				reject(data.error || {code: 'no-result'})
+				reject(data.error || build_error('no-result'))
 		}
 		this.socket.addEventListener('message', handlethismessage)
-		const request = {jsonrpc: '2.0', method, params, id}
-		if (logcall)
-			console.log('Request', request)
-		this.socket.send(JSON.stringify(request))
+		this.socket.send(strequest)
 	})
+}
+toolbox.Connection.prototype.http_call = function(request) {
+	return fetch(this.host + '/jsonrpc', {method: 'POST', body: request, mode: 'no-cors',
+		headers: {'Content-Type': 'application/json'}
+	}).then(r => r.json())
 }
 toolbox.Connection.prototype.populatedata = async function() {
 	const args = {getmetadata: true}
@@ -320,12 +339,20 @@ toolbox.Connection.prototype.get_infos = async function(infos, booleans=false) {
 	}, [])
 	const result = {}
 	for (const list of listoflists) {
-		Object.assign(result, await this.call(method, [list], debug.runningdata))
+		Object.assign(result, await this.call(method, [list], "runningdata", debug.runningdata))
 	}
 	return result
 }
 toolbox.Connection.prototype.ping = function() {
-	return this.call('JSONRPC.Ping', undefined, debug.ping)
+	return this.call('JSONRPC.Ping', undefined, "ping", debug.ping)
+}
+
+function build_error(code, message) {
+	const err = new Error(message)
+	err.code = code
+	err.errmessage = message
+	err['* source'] = 'web interface'
+	return err
 }
 
 function dereference(obj, reftypes) {
