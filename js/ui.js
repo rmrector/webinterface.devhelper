@@ -1,5 +1,8 @@
 'use strict'
 
+renderjson.set_show_to_level(10)
+	.set_icons('', '')
+
 const $ = (selector, context=document) => context.querySelector(selector)
 const $ls = (selector, context=document) => context.querySelectorAll(selector)
 
@@ -286,15 +289,19 @@ function attach_popout(element, info) {
 		UI.set_popoutinfo(element, undefined, true)
 	})
 }
-function inline_images(container, string) {
-	const innerHTML = string.replace(/image:\/\/[^""]*/g, imageurl => {
-		const shorturl = imageurl.length >= 60 ? imageurl.substring(0, 59) + '…' : imageurl
-		return `<span class="has-popoutinfo inline-popout popoutinfo-js" data-popoutinfo="${imageurl}">${shorturl}</span>`
+function build_preview(container) {
+	$ls('.string', container).forEach(elem => {
+		if (/^"image:\/\//.test(elem.textContent) ||
+				elem.textContent.length > 60 && elem.textContent.startsWith('"')) {
+			const content = elem.textContent.slice(1, elem.textContent.length - 1)
+			const shortcontent = content.length >= 60 ? content.substring(0, 59) + '…' : content
+			elem.textContent = `"${shortcontent}"`
+			elem.classList.add('has-popoutinfo', 'inline-popout', 'popoutinfo-js')
+			elem.dataset.popoutinfo = content
+			attach_popout(elem, content)
+		}
 	})
-	container.innerHTML = innerHTML
-	$ls('.popoutinfo-js', container).forEach(elem => {
-		attach_popout(elem, elem.dataset.popoutinfo || elem.textContent)
-	})
+	return container
 }
 
 UI.set_popoutinfo = function(elem, info, hovered) {
@@ -350,7 +357,7 @@ UI.add_runningsection = function(name, label) {
 		runningdatahelp = $('#runningdata-help-js')
 		runningping = $('#runningdata-ping-js')
 		runningping.addEventListener('click', () => UI.emit('togglerunningspeed'))
-		
+
 		$('#detailedart-js').classList.toggle('nodisplay', !appdata.show_allart)
 		$('#no-detailedart-js').classList.toggle('nodisplay', appdata.show_allart)
 	}
@@ -421,21 +428,15 @@ UI.set_result = function(title, data, type) {
 	const clone = $.clone(output_template)
 	clone.children[0].addEventListener('click', () => UI.set_popoutinfo())
 	let children = $ls('.data-js', clone)
-	if (['result', 'error'].includes(type))
-		title = '<i class="material-icons">file_download</i> ' + title
-	else if (type === 'calling')
-		title = '<i class="material-icons">file_upload</i> ' + title
-	children[0].innerHTML = title
-	if (['result', 'calling'].includes(type)) {
+	if (['result', 'error', 'calling'].includes(type)) {
+		const icon = type === 'calling' ? 'file_upload' : type === 'result' ? 'file_download' : 'error'
+		title = `<i class="material-icons">${icon}</i> ${title}`
 		children[0].classList.add('has-popoutinfo')
 		attach_popout(children[0], data[1])
 		data = data[0]
 	}
-	try {
-		inline_images(children[1], stringify_display(data, undefined, 2))
-	} catch (TypeError) {
-		console.log(data)
-	}
+	children[0].innerHTML = title
+	children[1].appendChild(build_preview(renderjson(data)))
 	children[1].title = new Date()
 	if (type === 'definition')
 		contentbox.innerHTML = ''

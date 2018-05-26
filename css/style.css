@@ -577,3 +577,9 @@ i.material-icons {
 	min-width: 250px;
 	width: 250px;
 }
+
+.renderjson .string { color: darkred; }
+.renderjson .number { color: darkcyan; }
+.renderjson .boolean { color: blueviolet; }
+.renderjson .key    { color: darkblue; }
+.renderjson .keyword { color: blue; }

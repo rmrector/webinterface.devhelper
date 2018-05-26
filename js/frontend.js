@@ -345,7 +345,7 @@ const appdata = {
 			const data = await this.connection.call(method, params)
 			UI.set_result(`Result of '${method}'`, [data, req], 'result')
 		} catch (err) {
-			UI.set_result(`Error calling '${method}'`, err, 'error')
+			UI.set_result(`Error calling '${method}'`, [err, req], 'error')
 		}
 	},
 	addhost: function(host) {
