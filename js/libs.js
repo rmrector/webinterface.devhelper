@@ -248,7 +248,8 @@ toolbox.Connection.prototype.disconnect = function(removelisteners=true) {
 	this.socket.close()
 	this.socket = null
 }
-toolbox.Connection.prototype.call = function(method, params, id=undefined, logcall=isdebug) {
+toolbox.Connection.prototype.call = function(method, params,
+		{id=undefined, logcall=isdebug, alldata=false}={}) {
 	return new Promise((resolve, reject) => {
 		if (!this.connected()) {
 			reject(build_error('no-connection', "Not connected to Kodi"))
@@ -271,8 +272,8 @@ toolbox.Connection.prototype.call = function(method, params, id=undefined, logca
 				if (logcall)
 					console.log('Result', data)
 				if (data.result)
-					return data.result
-				throw data.error || build_error('no-result')
+					return alldata ? data : data.result
+				throw (alldata ? data : data.error) || build_error('no-result')
 			}))
 			return
 		}
@@ -294,9 +295,9 @@ toolbox.Connection.prototype.call = function(method, params, id=undefined, logca
 			if (logcall)
 				console.log('Result', data)
 			if (data.result)
-				resolve(data.result)
+				resolve(alldata ? data : data.result)
 			else
-				reject(data.error || build_error('no-result'))
+				reject((alldata ? data : data.error) || build_error('no-result'))
 		}
 		this.socket.addEventListener('message', handlethismessage)
 		this.socket.send(strequest)
@@ -341,12 +342,13 @@ toolbox.Connection.prototype.get_infos = async function(infos, booleans=false) {
 	}, [])
 	const result = {}
 	for (const list of listoflists) {
-		Object.assign(result, await this.call(method, [list], "runningdata", debug.runningdata))
+		Object.assign(result, await this.call(method, [list],
+			{id: "runningdata", logcall: debug.runningdata}))
 	}
 	return result
 }
 toolbox.Connection.prototype.ping = function() {
-	return this.call('JSONRPC.Ping', undefined, "ping", debug.ping)
+	return this.call('JSONRPC.Ping', undefined, {id: "ping", logcall: debug.ping})
 }
 
 function build_error(code, message) {

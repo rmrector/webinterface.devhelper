@@ -341,7 +341,7 @@ const appdata = {
 		const req = JSON.stringify({jsonrpc: '2.0', id: this.connection.nextid, method, params})
 		UI.set_result(`Calling '${method}' with params`, [params, req], 'calling')
 		try {
-			const data = await this.connection.call(method, params)
+			const data = await this.connection.call(method, params, {alldata: true})
 			UI.set_result(`Result of '${method}'`, [data, req], 'result')
 		} catch (err) {
 			UI.set_result(`Error calling '${method}'`, [err, req], 'error')
