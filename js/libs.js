@@ -107,7 +107,7 @@ toolbox.has_samedata = function(obj1, obj2) {
 }
 
 toolbox.rangegen = function*(start, edge, step) {
-	if (arguments.length == 1) {
+	if (edge === undefined) {
 		edge = start
 		start = 0
 	}

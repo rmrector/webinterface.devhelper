@@ -556,20 +556,22 @@ const ExecutionToolbox = {
 			this.prepare_switcher(input, li, options, param.required)
 			input.style.width = '200px'
 		} else if (typeinfo.type === 'array' && param.items && param.items.enums) {
+			const enums = param.items.enums
 			const options = []
-			options.push(JSON.stringify([param.items.enums[0]]))
-			if (param.items.enums.length > 2 && param.items.enums.includes('art')
-			&& !param.items.enums.slice(0, 2).includes('art'))
+			options.push(JSON.stringify([enums[0]]))
+			if (enums.length > 2 && enums.includes('art') && !enums.slice(0, 2).includes('art'))
 				options.push('["art"]')
-			if (param.items.enums.length > 1)
-				options.push(JSON.stringify([param.items.enums[0], param.items.enums[1]]))
-			if (param.items.enums.length > 2)
-				options.push(JSON.stringify(param.items.enums))
+			if (enums.length > 1)
+				options.push(JSON.stringify(enums.slice(0, 2)))
+			if (enums.length > 2)
+				options.push(JSON.stringify(enums))
 			this.prepare_switcher(input, li, options, param.required)
 			if (typeinfo.name == 'properties')
-				input.style.width = '200px'
-		} else if (param.name === 'filter')
-			input.style.width = '200px'
+				input.style.width = '250px'
+		} else if (param.name === 'filter') {
+			this.add_filter(input, typeinfo, li)
+			input.style.width = '300px'
+		}
 
 		if (param.required)
 			input.required = true
@@ -579,6 +581,41 @@ const ExecutionToolbox = {
 		if (tabindex === 1)
 			input.focus()
 		return input
+	},
+	add_filter: function(input, typeinfo, li) {
+		if (!Array.isArray(typeinfo))
+			typeinfo = [typeinfo]
+		const options = []
+		const complex = typeinfo.find(type => type.id && type.id.startsWith('List.Filter.'))
+		if (complex) {
+			const rules = complex.type.find(type =>
+				type.id && type.id.startsWith('List.Filter.Rule.')).properties
+			toolbox.range(4).forEach(() => {
+				const field = toolbox.randomitem(rules.field.enums)
+				const operator = toolbox.randomitem(rules.operator.enums)
+				let option
+				if (operator === 'between')
+					option = `{"field": "${field}", "operator": "${operator}", "value": ["F", "X"]}`
+				else if (['true', 'false'].includes(operator))
+					option = `{"field": "${field}", "operator": "${operator}", "value": "${operator}"}`
+				else
+					option = `{"field": "${field}", "operator": "${operator}", "value": "XX"}`
+				if (!options.includes(option))
+					options.push(option)
+			})
+		}
+		for (const itype of typeinfo.slice(0, 2)) {
+			if (itype.id)
+				continue
+			let option = {}
+			Object.keys(itype.properties).forEach(key => {
+				const type = itype.properties[key].type
+				option[key] = type === 'string' ? "XX" :
+					['integer', 'number'].includes(type) ? 0 : true
+			})
+			options.push(JSON.stringify(option))
+		}
+		this.prepare_switcher(input, li, options)
 	},
 	prepare_toggler: function(input, parent, options, required) {
 		if (!required && !options.includes(''))
