@@ -45,7 +45,7 @@ window.addEventListener("hashchange", hashman.handle_hashchange)
 
 // INFO: Integer labels don't work, like "Player.Progress"
 // Contaner InfoBooleans 'OnNext', 'OnScrollNext', 'OnScrollPrevious', 'OnPrevious' are triggers for
-//  animations and aren't much use here
+//  animations and are so short they aren't much use here
 
 const pathlistitem_labels = ['FileName', 'Path', 'FolderName', 'FolderPath', 'FileNameAndPath', 'FileExtension', 'Size']
 	.map(l => 'ListItem.' + l)
@@ -476,8 +476,6 @@ store._theme = JSON.parse(localStorage.getItem(THEME_KEY))
 store._scriptwindows = JSON.parse(localStorage.getItem(SCRIPTWINDOWS_KEY))
 store._switches = JSON.parse(localStorage.getItem(SWITCHES_KEY))
 
-const randomitem = (list, odds=0) => list[Math.floor(Math.random() * list.length * (1 + odds))] || ''
-
 UI.on('loaded', () => {
 	if (store._connections) {
 		Object.entries(store._connections[0]).forEach(e => appdata.add_connection(...e))
@@ -490,8 +488,9 @@ UI.on('loaded', () => {
 		appdata.connect(host)
 	}
 	const subtitles = ["It's not really for goats...", "A possible solution for number b",
-		"which has its own super-teeny-tiny coffee bar inside..."]
-	UI.set_subtitle(randomitem(subtitles, 10))
+		"which has its own super-teeny-tiny coffee bar inside...",
+		"White space: you can't see 'em, how does it work?"]
+	UI.set_subtitle(toolbox.randomitem(subtitles, 15))
 	if (store._theme)
 		UI.set_theme(store._theme)
 	if (store._switches) {

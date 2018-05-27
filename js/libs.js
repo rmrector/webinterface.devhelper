@@ -120,6 +120,8 @@ toolbox.rangegen = function*(start, edge, step) {
 }
 toolbox.range = (start, edge, step) => Array.from(toolbox.rangegen(start, edge, step))
 
+toolbox.randomitem = (list, odds=0) => list[Math.floor(Math.random() * list.length * (1 + odds))] || ''
+
 const _pipe = (f1, f2) => (...args) => f2(f1(...args))
 const pipe = (...fns) => fns.reduce(_pipe)
 toolbox.pipe = pipe
