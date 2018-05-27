@@ -327,8 +327,7 @@ const appdata = {
 		UI.set_runningping(Math.trunc(performance.now() - t0))
 	},
 	executemethod: async function(method, params) {
-		if (Object.keys(params).length !== 0)
-			hashman.set(method, params, true)
+		hashman.set(method, params, true)
 		for (const [key, value] of Object.entries(params)) {
 			if (value.startswith(['{', '[', '"', '-', /\d/, 'true', 'false', 'null'])) {
 				try {
