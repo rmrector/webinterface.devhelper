@@ -29,72 +29,7 @@ function _serializer(replacer) {
 }
 
 const UI = {}
-toolbox.EventEmitter.call(UI)
-UI.__proto__ = new toolbox.EventEmitter()
-
-const firsttheme = $('link.themesheet')
-const runningbutton = $('#running-button-js')
-const logbutton = $('#log-button-js')
-const webpdbbutton = $('#webpdb-button-js')
-
-runningbutton.addEventListener('click', () => hashman.set('!RunningData'))
-UI.set_isrunning = function(isrunning) {
-	runningbutton.children[0].classList.toggle('forever-rotate', isrunning)
-}
-
-UI.hidesplash = function() {
-	const splash = $('#splash-js')
-	splash.addEventListener('transitionend', () => {
-		splash.remove()
-	})
-	splash.offsetWidth // make sure it's drawn so there is actually a transition
-	splash.classList.add('fadeout')
-}
-
-UI.set_subtitle = function(subtitle) {
-	$('#subtitle-js').innerText = subtitle
-}
-
-$('#theme-switcher-js').addEventListener('click', () => {
-	let nextlink = false
-	for (let link of $ls('link.themesheet')) {
-		if (nextlink) {
-			UI.set_theme(link.title)
-			UI.emit('themechange', link.title)
-			return
-		}
-		if (!link.disabled)
-			nextlink = true
-	}
-	const newtheme = firsttheme.title
-	UI.set_theme(newtheme)
-	UI.emit('themechange', newtheme)
-})
-UI.set_theme = function(themename) {
-	let oneenabled = false
-	$ls('link.themesheet').forEach(link => {
-		link.disabled = true
-		if (link.title === themename) {
-			link.disabled = false
-			oneenabled = true
-		}
-	})
-	if (!oneenabled) firsttheme.disabled = false
-}
-
-UI.show_logbutton = function(visible=true) {
-	logbutton.classList.toggle('nodisplay', !visible)
-	$('#log-desc-js').classList.toggle('nodisplay', !visible)
-	$('#switch-logbutton-js').checked = visible
-}
-UI.show_pdbbutton = function(visible=true) {
-	webpdbbutton.classList.toggle('nodisplay', !visible)
-	$('#webpdb-desc-js').classList.toggle('nodisplay', !visible)
-	$('#switch-webpdb-js').checked = visible
-}
-UI.set_showallart = function(visible=true) {
-	$('#switch-fullart-js').checked = visible
-}
+toolbox.EventEmitter(UI)
 
 // connectionbox
 const connection_template = $('#connection-template')

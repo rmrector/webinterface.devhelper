@@ -2,6 +2,8 @@
 	"globals": {
 		"UI": false,
 		"toolbox": false,
+		"compare": false,
+		"jskodi": false,
 		"hashman": false,
 		"appdata": false,
 		"debug": true,

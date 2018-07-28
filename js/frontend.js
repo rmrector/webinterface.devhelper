@@ -41,167 +41,6 @@ const hashman = {handle_hashchange: function() {
 }}
 window.addEventListener("hashchange", hashman.handle_hashchange)
 
-// TODO: Somehow build the info lists automatically, at least most of them
-
-// INFO: Integer labels don't work, like "Player.Progress"
-// Contaner InfoBooleans 'OnNext', 'OnScrollNext', 'OnScrollPrevious', 'OnPrevious' are triggers for
-//  animations and are so short they aren't much use here
-
-const pathlistitem_labels = ['FileName', 'Path', 'FolderName', 'FolderPath', 'FileNameAndPath', 'FileExtension', 'Size']
-	.map(l => 'ListItem.' + l)
-const listitem_bools = ['IsFolder', 'IsPlaying', 'IsResumable', 'IsCollection', 'IsSelected', 'IsStereoscopic',
-	'IsParentFolder', 'Property(IsSpecial)', 'Property(Addon.IsEnabled)', 'Property(Addon.IsInstalled)',
-	'Property(Addon.HasUpdate)', 'Property(Addon.Orphaned)'].map(l => 'ListItem.' + l)
-
-// INFO: 'icon' isn't set for add-ons and programs and such, have to use ListItem.Icon
-const videoarttypes = ['poster', 'fanart', 'banner', 'landscape', 'clearart', 'clearlogo', 'characterart',
-	'discart', 'thumb', 'icon', 'fanart1', 'fanart2', 'screenshot']
-const artistarttypes = ['fanart', 'fanart1', 'fanart2', 'banner', 'landscape', 'clearart', 'clearlogo', 'thumb']
-// 'fanart' is fallback from artist, 'poster' is the album cover/thumb for music videos
-const albumarttypes = ['thumb', 'discart', 'back', 'spine', 'fanart', 'poster']
-const basemusicarttypes = Array.from(new Set(artistarttypes.concat(albumarttypes)))
-const videoartworktypes = videoarttypes.concat(videoarttypes.map(t => 'tvshow.' + t))
-	.concat(videoarttypes.map(t => 'season.' + t)).concat(videoarttypes.map(t => 'set.' + t))
-const musicartworktypes = basemusicarttypes.concat(artistarttypes.map(t => 'artist.' + t))
-	.concat(artistarttypes.map(t => 'artist1.' + t)).concat(albumarttypes.map(t => 'album.' + t))
-	.concat(artistarttypes.map(t => 'albumartist.' + t)).concat(artistarttypes.map(t => 'albumartist1.' + t))
-
-const skinlabels = {
-	visiblewindows: {title: 'Visible windows', order: 0, special: 'justkey', visible: true,
-		filter: ([_, value]) => value, mapper: ([key, v]) => [key.slice(17, -1), v], boollist: []},
-	videoart: {title: 'Video art', order: 1, special: 'popupinfo',
-		filter: ([_, value]) => value,
-		mapper: ([key, value]) => [key, value.includes('/') | value.includes('\\')
-			? toolbox.imageencode(value) : value],
-		list: videoartworktypes.map(art => `ListItem.Art(${art})`)
-			.concat(videoartworktypes.map(art => `Container.Art(${art})`))
-			.concat(videoartworktypes.map(art => `Container.ListItem.Art(${art})`))
-			.concat(videoartworktypes.map(art => `Player.Art(${art})`))
-			.sort()},
-	musicart: {title: 'Music art', order: 1.5, special: 'popupinfo',
-		filter: ([_, value]) => value,
-		mapper: ([key, value]) => [key, value.includes('/') | value.includes('\\') ? toolbox.imageencode(value) : value],
-		list: musicartworktypes.map(art => `ListItem.Art(${art})`)
-			.concat(musicartworktypes.map(art => `Container.Art(${art})`))
-			.concat(musicartworktypes.map(art => `Container.ListItem.Art(${art})`))
-			.concat(musicartworktypes.map(art => `Player.Art(${art})`))
-			.sort()},
-	player: {title: 'Player InfoLabels', order: 9,
-		list: ['Time', 'FinishTime', 'TimeRemaining', 'Duration', 'SeekTime', 'SeekStepSize',
-			'StartTime', 'Title', 'TimeSpeed', 'Chapter', 'ChapterCount']
-			.map(l => 'Player.' + l).concat(['PlaylistPosition', 'PlaylistLength', 'LastPlayed',
-				'PlayCount', 'AudioLanguage', 'SubtitlesLanguage'].map(l => 'VideoPlayer.' + l))
-			.concat(['PlaylistPosition', 'PlaylistLength'].map(l => 'MusicPlayer.' + l))
-			.concat(['Random', 'Repeat', 'Length(music)', 'Length(video)', 'Position(music)', 'Position(video)']
-			.map(l => 'Playlist.' + l)).sort()},
-	videoplayer: {title: 'VideoPlayer InfoLabels', order: 10,
-		list: ['TVShowTitle', 'Plot', 'Episode', 'Season', 'Genre', 'Director', 'AudioLanguage',
-			'Year', 'Rating', 'MPAA', 'CastAndRole', 'Album', 'Artist', 'Studio', 'Writer', 'Tagline', 'DBID',
-			'UserRating', 'PlotOutline', 'SubtitlesLanguage', 'Cast', 'Title'].sort().map(l => 'VideoPlayer.' + l)},
-	musicplayer: {title: 'MusicPlayer InfoLabels', order: 11,
-		list: ['Album', 'Property(Album_Mood)', 'Property(Album_Style)', 'Property(Album_Theme)', 'Artist',
-			'Property(Album_Type)', 'Property(Album_Label)', 'Property(Album_Description)', 'Property(Artist_Born)',
-			'Property(Artist_Died)', 'Property(Artist_Formed)', 'Property(Artist_Mood)', 'Property(Artist_Disbanded)',
-			'Property(Artist_YearsActive)', 'Property(Artist_Instrument)', 'Genre', 'Property(Artist_Description)',
-			'Property(Artist_Style)', 'Property(Artist_Genre)', 'Lyrics', 'Year', 'Rating', 'DiscNumber',
-			'Comment', 'TrackNumber', 'Contributors', 'ContributorAndRole', 'Mood', 'Property(Role.Arranger)',
-			'Property(Role.Composer)', 'Property(Role.Conductor)', 'Property(Role.DJMixer)', 'Property(Role.Engineer)',
-			'Property(Role.Lyricist)', 'Property(Role.Mixer)', 'Property(Role.Orchestra)', 'Property(Role.Producer)',
-			'Property(Role.Remixer)', 'UserRating', 'DBID', 'Title', 'Property(Artist_Sortname)',
-			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)']
-				.sort().map(l => 'MusicPlayer.' + l)
-			.concat(['Visualisation.Preset', 'Visualisation.Name'])},
-	playertech: {title: 'Player tech InfoLabels', order: 12,
-		list: ['Process(VideoFPS)', 'Process(VideoDAR)', 'Process(AudioChannels)', 'Process(AudioDecoder)',
-			'Process(AudioSamplerate)', 'Process(AudioBitsPerSample)', 'Process(PixFormat)', 'Process(DeintMethod)',
-			'Process(VideoHeight)', 'Process(VideoDecoder)', 'Process(VideoWidth)'].map(l => 'Player.' + l)
-			.concat(['VideoCodec', 'VideoResolution', 'VideoAspect', 'AudioCodec', 'AudioChannels', 'StereoscopicMode']
-				.map(l => 'VideoPlayer.' + l))
-			.concat(['BitRate', 'Channels', 'BitsPerSample', 'SampleRate', 'Codec'].map(l => 'MusicPlayer.' + l)).sort()},
-	listitem: {title: 'ListItem InfoLabels', order: 4,
-		list: ['Label', 'Label2', 'Title', 'OriginalTitle', 'SortLetter', 'EndTime', 'Icon', 'ActualIcon',
-			'Year', 'Premiered', 'Genre', 'Director', 'Country', 'Episode',
-			'Season', 'TVShowTitle', 'Date', 'DateAdded', 'Size', 'Set', 'SetID', 'UserRating', 'Rating',
-			'Votes', 'RatingAndVotes', 'MPAA', 'CastAndRole', 'DBID', 'Cast', 'DBTYPE', 'Duration', 'Studio',
-			'Top250', 'Trailer', 'Writer', 'Tagline', 'PlotOutline', 'Plot', 'IMDBNumber', 'PercentPlayed',
-			'LastPlayed', 'PlayCount', 'VideoCodec', 'VideoResolution', 'VideoAspect', 'AudioCodec',
-			'AudioChannels', 'AudioLanguage', 'SubtitleLanguage', 'StereoscopicMode',
-			'EndTimeResume', 'Status', 'Tag', 'Appearances', 'Overlay'].sort().map(l => 'ListItem.' + l)},
-	musiclistitem: {title: 'Music ListItem InfoLabels', order: 6,
-		list: ['Artist', 'Album', 'DiscNumber', 'TrackNumber', 'AlbumArtist', 'Comment', 'Contributors', 'Mood', 'ContributorAndRole', 'Property(Role.Arranger)', 'Property(Role.Composer)', 'Property(Role.Conductor)',
-			'Property(Role.DJMixer)', 'Property(Role.Engineer)', 'Property(Role.Lyricist)', 'Property(Role.Mixer)',
-			'Property(Role.Orchestra)', 'Property(Role.Producer)', 'Property(Role.Remixer)', 'Property(Artist_Sortname)',
-			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)', 'Property(Artist_Born)',
-			'Property(Artist_Died)', 'Property(Artist_Formed)', 'Property(Artist_Mood)', 'Property(Artist_Disbanded)',
-			'Property(Artist_YearsActive)', 'Property(Artist_Instrument)', 'Property(Artist_Description)',
-			'Property(Artist_Style)', 'Property(Artist_Genre)', 'Lyrics', 'Property(Album_Mood)',
-			'Property(Album_Style)', 'Property(Album_Theme)', 'Property(Album_Type)', 'Property(Album_Label)',
-			'Property(Album_Description)'].sort().map(l => 'ListItem.' + l)},
-	addonlistitem: {title: 'Add-on ListItem InfoLabels', order: 7,
-		list: ['AddonBroken', 'AddonCreator', 'AddonDescription', 'AddonDisclaimer', 'AddonInstallDate', 'AddonSize',
-			'AddonLastUpdated', 'AddonLastUsed', 'AddonName', 'AddonNews', 'AddonSummary', 'AddonType', 'AddonVersion',
-			'Property(Addon.Changelog)', 'Property(Addon.ID)', 'Property(Addon.Path)', 'Property(Addon.Status)']
-			.sort().map(l => 'ListItem.' + l)},
-	path: {title: 'Path InfoLabels', order: 2,
-		list: pathlistitem_labels.concat(pathlistitem_labels.map(l => 'Container.' + l))
-			.concat(['Folderpath', 'Filenameandpath', 'Filename'].map(l => 'Player.' + l))
-			.concat(['Container.FolderPath', 'Container.FolderName']).sort()},
-	system: {title: 'System InfoLabels', order: 3,
-		list: ['CPUTemperature', 'CPUUsage', 'GPUTemperature', 'FanSpeed', 'FPS', 'Memory(used)', 'CurrentWindow',
-			'Memory(total)', 'Memory(used.percent)', 'HddTemperature', 'Uptime', 'TotalUptime','CpuFrequency',
-			'VideoEncoderInfo', 'InternetState', 'OSVersionInfo', 'FreeSpace', 'UsedSpace', 'TotalSpace',
-			'UsedSpacePercent', 'FreeSpacePercent', 'BuildDate', 'FriendlyName', 'ScreenMode', 'ScreenWidth',
-			'ScreenHeight', 'ScreenResolution', 'Language', 'ProfileName', 'ProfileCount', 'ProfileThumb',
-			'CurrentControl', 'CurrentControlID'].map(l => 'System.' + l)
-			.concat(['AspectRatio', 'CurrentTheme', 'CurrentColourTheme', 'Font'].map(l => 'Skin.' + l))
-			.concat('Window.Property(xmlfile)', 'Weather.Conditions')
-			.concat(['IsDHCP', 'IPAddress', 'LinkState'].map(l => 'Network.' + l)).sort()},
-	container: {title: 'Container InfoLabels', order: 8,
-		list: ['Content', 'Viewmode', 'SortMethod', 'SortOrder', 'PluginName', 'PluginCategory', 'ShowPlot',
-		'ShowTitle', 'NumPages', 'NumItems', 'CurrentPage', 'CurrentItem', 'Position', 'Column', 'Row',
-		'Totaltime', 'TotalWatched', 'TotalUnwatched', 'Property(addoncategory)', 'Property(reponame)',
-		'ViewCount', 'NumAllItems', 'NumNonFolderItems'].sort().map(l => 'Container.' + l)},
-	bools: {title: 'Other InfoBooleans', order: 16,
-		boollist: ['HasThumb', 'HasFiles', 'HasFolders',
-			'HasNext', 'HasPrevious', 'IsUpdating', 'IsStacked', 'CanFilter', 'CanFilterAdvanced', 'Filtered',
-			'HasParent', 'SortDirection(ascending)', 'SortDirection(descending)', 'Scrolling'].map(l => 'Container.' + l)
-			.concat(['IsScanningMusic', 'IsScanningVideo'].map(l => 'Library.' + l))
-			.concat('Weather.IsFetched').sort()},
-	listitembools: {title: 'ListItem InfoBooleans', order: 13,
-		boollist: listitem_bools.concat(listitem_bools.map(l => 'Container.' + l))},
-	playerbools: {title: 'Player InfoBooleans', order: 14,
-		boollist: ['HasMedia', 'HasAudio', 'HasDuration', 'HasVideo', 'Passthrough', 'Playing', 'Paused', 'Forwarding',
-			'Forwarding2x', 'Forwarding4x', 'Forwarding8x', 'Forwarding16x', 'Forwarding32x', 'Rewinding2x',
-			'Rewinding', 'Rewinding4x', 'Rewinding8x', 'Rewinding16x', 'Rewinding32x', 'Caching', 'DisplayAfterSeek',
-			'Seeking', 'ShowTime', 'ShowInfo', 'IsInternetStream', 'Muted', 'Process(videohwdecoder)', 'TempoEnabled',
-			'IsTempo', 'HasGame'].map(l => 'Player.' + l)
-			.concat('MusicPlayer.HasNext', 'MusicPlayer.HasPrevious', 'MusicPartyMode.Enabled')
-			.concat(['IsRandom', 'IsRepeat', 'IsRepeatOne'].map(l => 'Playlist.' + l))
-			.concat(['UsingOverlays', 'IsFullscreen', 'HasMenu', 'HasInfo', 'HasSubtitles',
-				'HasTeletext', 'SubtitlesEnabled', 'Content(movies)', 'Content(episodes)',
-				'Content(musicvideos)', 'IsStereoscopic'].map(l => 'VideoPlayer.' + l)).sort()},
-	systembools: {title: 'System InfoBooleans', order: 15,
-		boollist: ['HasNetwork', 'HasMediadvd', 'IsStandalone', 'IsFullscreen', 'IsLoggedOn', 'HasLoginScreen',
-			'HasActiveModalDialog', 'HasVisibleModalDialog', 'Platform.Linux', 'Platform.Linux.RaspberryPi',
-			'Platform.Windows', 'Platform.OSX', 'Platform.IOS', 'Platform.Darwin', 'Platform.Android', 'CanPowerDown',
-			'CanSuspend', 'CanHibernate', 'HasHiddenInput', 'CanReboot', 'ScreenSaverActive', 'Setting(hidewatched)',
-			'IsInhibit', 'HasShutdown', 'Time(00:00, 08:00)', 'Time(08:00, 16:00)', 'Time(16:00, 00:00)']
-				.sort().map(l => 'System.' + l)},
-	lightsystemlabels: {title: 'Sys Info', order: 97, visible: true,
-		list: ['CPUUsage', 'FPS', 'Memory(used)',
-			'Memory(used.percent)', 'CpuFrequency', 'ScreenMode',
-			'CurrentControl', 'CurrentControlID'].map(l => 'System.' + l)
-			.concat('Skin.AspectRatio').sort()},
-	customlabels: {title: 'Custom InfoLabels', order: 98, visible: true, list: []},
-	custombooleans: {title: 'Custom InfoBooleans', order: 99, visible: true, boollist: []}
-}
-skinlabels.containerlistitem = {title: 'Container.ListItem InfoLabels', order: 5,
-	list: skinlabels.listitem.list.map(l => 'Container.' + l)}
-skinlabels.addonlistitem.list = skinlabels.addonlistitem.list.map(l => 'Container.' + l)
-	.concat(skinlabels.addonlistitem.list)
-skinlabels.musiclistitem.list = skinlabels.musiclistitem.list.map(l => 'Container.' + l)
-	.concat(skinlabels.musiclistitem.list)
-
 const appdata = {
 	connection: null,
 	connections: {},
@@ -216,7 +55,7 @@ const appdata = {
 		this.disconnect()
 		let con
 		try {
-			con = new toolbox.Connection(host)
+			con = new jskodi.Connection(host)
 		} catch(e) {
 			console.log(e)
 			return
@@ -287,16 +126,16 @@ const appdata = {
 					this.loadarttypes()
 				while (this.currentaction === action) {
 					if (this.apphidden) {
-						await sleep(1000)
+						await toolbox.sleep(1000)
 						continue
 					}
 					try {
 						await this.update_runningdata()
-						await sleep(this.runningvis.length ? this.runningspeed : 1000)
+						await toolbox.sleep(this.runningvis.length ? this.runningspeed : 1000)
 					} catch (err) {
 						if (!['no-connection', 'timeout', 'no-result'].includes(err.code))
 							console.log(err)
-						await sleep(err.code === 'timeout' ? this.runningspeed : 5000)
+						await toolbox.sleep(err.code === 'timeout' ? this.runningspeed : 5000)
 					}
 				}
 				UI.set_isrunning(false)
@@ -315,14 +154,15 @@ const appdata = {
 	},
 	update_runningdata: async function() {
 		const t0 = performance.now()
-		for (const [key, value] of Object.entries(skinlabels)) {
-			if (this.runningvis.includes(key)) {
-				let data = await this.connection.get_infos(value.list || value.boollist, !value.list)
-				data = toolbox.process_object(data, value.filter, value.mapper)
-				UI.set_runningdata(key, value.list ? data
-					: toolbox.arr2obj(Object.keys(data), (_, key) => '' + data[key]), value.special)
+
+		const boollist_filter = data => toolbox.arr2obj(Object.keys(data), (_, key) => '' + data[key])
+		for (const [category, options] of jskodi.skinlabels.get_categories()) {
+			if (this.runningvis.includes(category)) {
+				let data = await this.connection.get_infos(options.list || options.boollist, !options.list)
+				data = toolbox.process_object(data, options.filter, options.mapper)
+				UI.set_runningdata(category, options.list ? data : boollist_filter(data), options.special)
 			} else
-				UI.set_runningdata(key, false)
+				UI.set_runningdata(category, false)
 		}
 		UI.set_runningping(Math.trunc(performance.now() - t0))
 	},
