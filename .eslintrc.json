@@ -7,7 +7,9 @@
 		"hashman": false,
 		"appdata": false,
 		"debug": true,
-		"isdebug": true
+		"isdebug": true,
+		"Vue": false,
+		"appstate": false
 	},
 	"rules": {
 		"no-unused-vars": ["warn", {"argsIgnorePattern": "^_\\w?$"}],

@@ -5,17 +5,21 @@
 <meta charset="utf-8"/>
 <!-- <link href="https://fonts.googleapis.com/css?family=Roboto|Roboto+Mono" rel="stylesheet">
 <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"> -->
-<link href="css/roboto_materialicons.css" rel="stylesheet">
+<link href="vendor/fonts/roboto_materialicons.css" rel="stylesheet">
 <!-- https://github.com/caldwell/renderjson 1.3.2 -->
-<script src="js/renderjson.js"></script>
+<script src="vendor/renderjson.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script> -->
+<script src="vendor/vue.min.js"></script>
 
 <title>Devhelper web</title>
 <link href="css/style.css" rel="stylesheet">
 <script>
 let isdebug = false
 let debug = {
+	appstate: false,
 	ping: false,
-	runningdata: false
+	runningdata: false,
+	other_jsonrpc: false
 }
 </script>
 <script src="js/libs.js"></script>
@@ -23,26 +27,26 @@ let debug = {
 </head>
 <body>
 <header class="header">
-	<div class="header--titleandbuttons"><div class="header--titles"><a id="maintitle" href="">Devhelper web</a>
-		<div class="header--subtitle" id="subtitle-js"></div></div>
-		<div class="header--buttons">
-			<button type="button" id="actions-button-js" class="flatbutton clearbutton nodisplay"
-				title="Show Handy Actions"><i class="material-icons">dns</i></button>
-			<a href="" id="webpdb-button-js" class="flatbutton clearbutton nodisplay"
-				title="Open Web PDB (Python debugger)" target="kodiwebpdb"><i class="material-icons">bug_report</i></a>
-			<a href="" id="log-button-js" class="flatbutton clearbutton nodisplay"
-				title="View Kodi log" target="kodilog"><i class="material-icons">list</i></a>
-			<button type="button" id="running-button-js" class="flatbutton clearbutton"
-				title="Show running data"><i class="material-icons">autorenew</i></button>
+	<div class="header__titleandbuttons"><div class="header__titles"><a id="maintitle" href="">Devhelper web</a>
+		<div class="header__subtitle" id="subtitle-js"></div></div>
+		<div id="header-buttons-vue" class="header__buttons">
+			<icon-button title="Show Handy Actions" icon="dns" @click="open_handyactions"
+				v-show="show_handyactions"></icon-button>
+			<icon-button title="Open Web PDB (Python debugger)" icon="bug_report" @click="open_webpdb"
+				v-show="show_pdbbutton" button-class="nav-button"></icon-button>
+			<icon-button title="View Kodi log" icon="list" @click="open_kodilog"
+				v-show="show_logbutton" button-class="nav-button"></icon-button>
+			<icon-button title="Show running data" icon="autorenew" @click="start_runningdata" button-class="nav-button"
+				:icon-class="{'forever-rotate': runningdata_mode}"></icon-button>
 		</div>
 	</div>
 	<div class="conbox">
-		<div class="conbox--shortcontent">
-			<div id="conbox-shortcontent-js" class="conbox--shortcontent-message"><span>No host</span></div>
-			<button type="button" id="conbox-button-js" class="flatbutton conbox--button"
+		<div class="conbox__shortcontent">
+			<div id="conbox-shortcontent-js" class="conbox__shortcontent-message"><span>No host</span></div>
+			<button type="button" id="conbox-button-js" class="flatbutton conbox__button"
 				title="Expand connection list"><i class="icon">+</i></button>
 		</div>
-		<div id="conbox-content-js" class="conbox--content" style="display: none">
+		<div id="conbox-content-js" class="conbox__content" style="display: none">
 			<div style="text-align: right; margin-bottom: 3px;"><label>Connect to new host <input type="text" name="host"
 				placeholder="http://localhost:8080" style="margin-left: 10px;width: 200px"></label></div>
 			<div id="conbox-allconnections"></div>
@@ -67,10 +71,11 @@ let debug = {
 				<ul id="params-list-js" class="params-list"></ul>
 				<template id="param-template"><li class="param-li inline-li has-popoutinfo">
 					<label><span>Param name</span><input type="text" /></label>
-					<button class="flatbutton clearbutton smallbutton switcher switcher-js nodisplay" type="button" tabindex="-1"
-						title="Click to toggle examples"><i class="material-icons">rotate_right</i></button>
+					<button class="flatbutton clearbutton smallbutton switcher switcher-js nodisplay"
+							type="button" tabindex="-1" title="Click to toggle examples">
+						<i class="material-icons">rotate_right</i></button>
 				</li></template>
-				<template id="param-bool-template"><li class="param-li inline-li has-popoutinfo">
+				<template id="param-bool-template"><li class="param-li inline-li has-popoutinfo param-li-checkbox">
 					<label><span>Param name</span><input type="checkbox" /></label>
 				</li></template>
 				<template id="param-select-template"><li class="param-li inline-li has-popoutinfo">
@@ -78,17 +83,17 @@ let debug = {
 				</li></template>
 				<div class="inline-li nodisplay">
 					<div>Custom InfoLabels</div>
-					<textarea id="custom-infolabels-js" class="execution--bigbox"></textarea>
+					<textarea id="customlabels-js" class="execution__bigbox"></textarea>
 				</div>
 				<div class="inline-li nodisplay">
 					<div>Custom InfoBooleans</div>
-					<textarea id="custom-infobooleans-js" class="execution--bigbox"></textarea>
+					<textarea id="custombooleans-js" class="execution__bigbox"></textarea>
 				</div>
 				<div id="action-container-js" class="action-container">
-					<button type="submit" id="execute-button-js" class="flatbutton action-button run-button switcher nodisplay">
+					<button type="submit" id="execute-button-js" class="flatbutton action-button nodisplay">
 						<i class="material-icons">play_arrow</i> Execute method</button>
 					<button type="button" id="filter-button-js" class="flatbutton clearbutton smallbutton nodisplay"
-						title="Toggle all infos"><i class="material-icons">filter_list</i></button>
+						tabindex="-1" title="Toggle all infos"><i class="material-icons">filter_list</i></button>
 				</div>
 			</form></div>
 		</div>
@@ -97,14 +102,14 @@ let debug = {
 				<p>You can add more Kodi hosts in the orange section to the far right along the top.
 				<p>Click the "Show running data" button in the right of the red section along the top to watch InfoLabels
 				and InfoBooleans, the same data available to skins.
-				<span id="log-desc-js" class="nodisplay">To use the "View Kodi log" button,
-				add "special://logpath/" as a media source (pictures, music, or videos; the file browser won't work).
+				<p id="log-desc-js" class="nodisplay">To use the "View Kodi log" button, add "special://logpath/"
+				as a media source in Kodi (pictures, music, or videos; the file browser won't work).
 				Do note that this can allow HTTP requests to Kodi to read everything in the same folder
 				as the log, including subdirectories.
-				On Windows this includes everything in Kodi's entire data directory.</span>
-				<span id="webpdb-desc-js" class="nodisplay">See
+				On Windows this includes everything in Kodi's entire data directory.</p>
+				<p id="webpdb-desc-js" class="nodisplay">See
 				<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
-				for super Python debugging powers.</span>
+				for super Python debugging powers.</p>
 				<p>All notifications from the connected Kodi host will show up on the right, and you can explore
 				JSON-RPC methods to the left, then fill out the params and execute it below.
 				<p>URLs power much of the functionality, which can be bookmarked for quick access.
@@ -131,14 +136,11 @@ let debug = {
 					Check one or more boxes in the yellow section below to watch some data that is frequently
 					updated. These are powered by InfoLabels and InfoBooleans, the same info
 					available to skins on the current window.
-					<p id="no-detailedart-js">"Video/Music art" will show only 3 fanart ('fanart', 'fanart1', 'fanart2'),
-					but more may be set. Ditto "artist"/"artist1" and "albumartist"/"albumartist1".
-					<p id="detailedart-js" class="nodisplay">Initial requests will take more time as
-					artwork types are loaded from the library in the background. If you add a new
-					art type in the Kodi library, refresh the page so that <em>Devhelper web</em>
-					rebuilds its art type lists.
 					<p>Custom InfoLabels and InfoBooleans can be entered one per line.
-					<p>Click on the ping time ('##ms') in the top-right of this box to update faster.</div>
+					<p>Click on the ping time ('##ms') in the top-right of this box to update faster.
+					<p>The artwork and visible windows checked can be configured with buttons
+					along the bottom left.
+					</div>
 			</div></template>
 			<template id="runningdata-section-template"><div class="runningdata-section inline-li nodisplay">
 				<div class="runningdata-title data-js">Section title</div><ul class="runningdata-data data-js"></ul>
@@ -153,32 +155,68 @@ let debug = {
 	</div>
 </div>
 <footer class="footer">
-	<div class="footer-buttons">
-		<button type="button" id="theme-switcher-js" class="flatbutton clearbutton"
-			title="Switch color theme"><i class="material-icons">format_paint</i></button>
-		<button type="button" id="open-settings-button-js" class="flatbutton clearbutton"
-			title="Open settings"><i class="material-icons">settings</i></button>
+	<div id="footer-buttons-vue" class="footer-buttons">
+		<icon-button title="Switch color theme" icon="format_paint" @click="switch_theme"></icon-button>
+		<icon-button title="Open settings" icon="settings" @click="open_settings" button-class="nav-button"></icon-button>
+		<icon-button title="Edit custom windows" icon="code" @click="open_customwindows" button-class="nav-button"></icon-button>
+		<icon-button title="Edit full art list" icon="brush" @click="open_artlist" button-class="nav-button"></icon-button>
 	</div>
 	<address class="madeby">Made by <a href="https://github.com/rmrector" target="_blank">Ryan Rector</a></address>
 </footer>
-<div class="splash" id="splash-js"></div>
-<div class="dialog nodisplay" id="dialog-js">
-	<div class="dialog-window">
-		<h1>Settings</h1>
+<div id="settings-dialog-vue">
+	<dialog-window header="Settings" v-show="show" @close="close">
 		<ul class="settings-list">
-			<li><label><input type="checkbox" id="switch-fullart-js" />Fetch full art list</label></li>
-			<li><label><input type="checkbox" id="switch-logbutton-js" />Show log button</label></li>
-			<li><label><input type="checkbox" id="switch-webpdb-js" />Show Web PDB button</label></li>
+			<li v-for="switch_ in switches"><label>
+				<input type="checkbox" :name="switch_.name" :checked="switch_.value" @input="set_switch" />
+				{{ switch_.label }}</label></li>
 		</ul>
-		<p style="padding-top: 10px; width: 240px;"><i>Refresh page after changing a switch</i></p>
-		<button type="button" id="close-settings-button-js" class="flatbutton action-button close-button">
-			Close</button>
-	</div>
+	</dialog-window>
 </div>
-<link class="themesheet" href="css/rainbowhork.css" rel="stylesheet" title="Default theme">
-<link class="themesheet" href="css/light.css" rel="alternate stylesheet" title="Light theme">
+<div id="customwindows-editor-vue">
+	<dialog-window header="Custom windows" v-show="show" @close="close"
+		description="Custom script windows to include in 'Visible windows' of RunningData. One window per line.">
+		<textarea v-model.lazy="customwindows_text" style="height: 400px; width: 450px;"></textarea>
+	</dialog-window>
+</div>
+<div id="artlist-editor-vue">
+	<dialog-window header="Custom art list" v-show="show" @close="close"
+		description="Artwork types to look for in RunningData. One art type per line.">
+		<div style="width: 710px;">
+			<div class="artlist__mediatype"><label>movie:
+				<textarea v-model.lazy="mediatype_movie"></textarea>
+			</label></div><div class="artlist__mediatype"><label>set:
+				<textarea v-model.lazy="mediatype_set"></textarea>
+			</label></div><div class="artlist__mediatype"><label>tvshow:
+				<textarea v-model.lazy="mediatype_tvshow"></textarea>
+			</label></div><div class="artlist__mediatype"><label>season:
+				<textarea v-model.lazy="mediatype_season"></textarea>
+			</label></div><div class="artlist__mediatype"><label>episode:
+				<textarea v-model.lazy="mediatype_episode"></textarea>
+			</label></div><div class="artlist__mediatype"><label>musicvideo:
+				<textarea v-model.lazy="mediatype_musicvideo"></textarea>
+			</label></div><div class="artlist__mediatype"><label>artist:
+				<textarea v-model.lazy="mediatype_artist"></textarea>
+			</label></div><div class="artlist__mediatype"><label>album:
+				<textarea v-model.lazy="mediatype_album"></textarea>
+			</label></div><div class="artlist__mediatype"><label>song:
+				<textarea v-model.lazy="mediatype_song"></textarea>
+			</label></div><div class="artlist__buttonbox">
+				<button type="button" :disabled="shared.loadingartwork" @click="load_artlist"
+					class="flatbutton action-button progress-button" title="Will take a minute">{{ loadbutton_text }}</button>
+			</div>
+		</div>
+	</dialog-window>
+</div>
+<div class="splash" id="splash-js"></div>
+
+<div id="uishim-vue">
+	<link class="themesheet" href="css/rainbowhork.css" rel="stylesheet" title="Default theme"
+		:disabled="shared.settings.theme !== 'Default theme'">
+	<link class="themesheet" href="css/light.css" rel="alternate stylesheet" title="Light theme"
+		:disabled="shared.settings.theme !== 'Light theme'">
+</div>
 <script src="js/ui.js"></script>
 <script src="js/frontend.js"></script>
-<script>UI.emit('loaded')</script>
+<script>start_app()</script>
 </body>
 </html>

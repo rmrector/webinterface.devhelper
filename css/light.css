@@ -1,22 +1,22 @@
-.header--titleandbuttons {
+.header__titleandbuttons {
 	background-color: hsl(0, 0%, 80%);
 }
 a#maintitle {
 	color: hsl(0, 0%, 25%);
 }
-.header--subtitle {
+.header__subtitle {
 	color: black;
 }
 .conbox {
 	background-color: hsl(0, 0%, 90%);
 }
-.conbox--content {
+.conbox__content {
 	background-color: hsl(0, 0%, 90%);
 }
-.conbox--button {
+.conbox__button {
 	background-color: hsl(0, 30%, 60%);
 }
-.conbox--button.connected {
+.conbox__button.connected {
 	background-color: hsl(120, 15%, 50%);
 }
 .footer {

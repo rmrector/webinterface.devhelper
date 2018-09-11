@@ -26,6 +26,7 @@ String.prototype.startswith = function(prefixes) {
 	return false
 }
 
+// enhance the global debug object
 Object.defineProperty(debug = new Proxy(debug, {
 	get: (target, prop) => isdebug && target[prop]
 }), 'all', {
@@ -124,6 +125,8 @@ toolbox.rangegen = function*(start, edge, step) {
 toolbox.range = (start, edge, step) => Array.from(toolbox.rangegen(start, edge, step))
 
 toolbox.randomitem = (list, odds=0) => list[Math.floor(Math.random() * list.length * (1 + odds))]
+
+toolbox.nextitem = (list, current) => list[(list.indexOf(current) + 1) % list.length]
 
 const _pipe = (f1, f2) => (...args) => f2(f1(...args))
 const pipe = (...fns) => fns.reduce(_pipe)

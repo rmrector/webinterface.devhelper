@@ -1,18 +1,9 @@
 'use strict'
 
-renderjson.set_show_to_level(10)
-	.set_icons('', '')
-
 const $ = (selector, context=document) => context.querySelector(selector)
-const $ls = (selector, context=document) => context.querySelectorAll(selector)
+const $ls = (selector, context=document) => Array.from(context.querySelectorAll(selector))
 
 $.clone = (node, istemplate=true) => (istemplate ? node.content : node).cloneNode(true)
-
-// Edge polyfills. Still doesn't completely work, though
-if (!HTMLCollection.prototype[Symbol.iterator])
-	HTMLCollection.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator]
-if (!NodeList.prototype[Symbol.iterator])
-	NodeList.prototype[Symbol.iterator] = Array.prototype[Symbol.iterator]
 
 /** Stringify for display, protect against circular refs */
 const stringify_display = (obj, replacer, spaces) => JSON.stringify(obj, _serializer(replacer), spaces)
@@ -44,13 +35,8 @@ function getconnection(host) {
 			return li
 	}
 }
-UI.set_connection = function(name, host) {
+UI.set_connection = function(name) {
 	shortcontent.textContent = name
-	UI.imageurl_base = host + '/image/'
-	logbutton.href = host + "/vfs/special%3A%2F%2Flogpath%2Fkodi.log"
-	const origin = host ? new URL(host).origin : host
-	logbutton.target = origin
-	webpdbbutton.href = origin + ":5555"
 	$ls('.connection-li', allconnections).forEach(li => {
 		li.classList.toggle('selected', li.children[0].textContent === name)
 		if (li.children[0].textContent === name) {
@@ -224,7 +210,19 @@ function attach_popout(element, info) {
 		UI.set_popoutinfo(element, undefined, true)
 	})
 }
+function inline_images(container, string) {
+	const innerHTML = string.replace(/image:\/\/[^""]*/g, imageurl => {
+		const shorturl = imageurl.length >= 60 ? imageurl.substring(0, 59) + '…' : imageurl
+		return `<span class="has-popoutinfo inline-popout popoutinfo-js" data-popoutinfo="${imageurl}">${shorturl}</span>`
+	})
+	container.innerHTML = innerHTML
+	$ls('.popoutinfo-js', container).forEach(elem => {
+		attach_popout(elem, elem.dataset.popoutinfo || elem.textContent)
+	})
+}
 function build_preview(container) {
+	// inline image previews and shortens long strings from renderJSON
+	// doesn't work on image URLs that are lazy rendered
 	$ls('.string', container).forEach(elem => {
 		if (/^"image:\/\//.test(elem.textContent) ||
 				elem.textContent.length > 60 && elem.textContent.startsWith('"')) {
@@ -252,8 +250,8 @@ UI.set_popoutinfo = function(elem, info, hovered) {
 	preview.innerHTML = ''
 	if (info && info.startsWith('image://')) {
 		const clone = $.clone(previewimg_template)
-		clone.children[0].textContent = toolbox.imagedecode(info)
-		clone.children[1].src = UI.imageurl_base + encodeURIComponent(info)
+		clone.children[0].textContent = jskodi.imagedecode(info)
+		clone.children[1].src = appstate.shared.connection.host + '/image/' + encodeURIComponent(info)
 		preview.appendChild(clone)
 	} else if (info) {
 		const clone = $.clone(previewpre_template)
@@ -292,9 +290,6 @@ UI.add_runningsection = function(name, label) {
 		runningdatahelp = $('#runningdata-help-js')
 		runningping = $('#runningdata-ping-js')
 		runningping.addEventListener('click', () => UI.emit('togglerunningspeed'))
-
-		$('#detailedart-js').classList.toggle('nodisplay', !appdata.show_allart)
-		$('#no-detailedart-js').classList.toggle('nodisplay', appdata.show_allart)
 	}
 	const infobox = $.clone(runningdata_section_template)
 	infobox.children[0].classList.add(name + '-js')
@@ -308,8 +303,9 @@ UI.set_runningping = function(ping) {
 }
 UI.set_pingspeed = function(runningspeed) {
 	if (runningping) {
-		runningping.classList.toggle('fast', runningspeed === 200)
+		runningping.classList.toggle('fast', runningspeed && runningspeed < 1000)
 		runningping.classList.toggle('supafast', runningspeed === 0)
+		runningping.classList.toggle('slow', runningspeed > 1000)
 	}
 }
 UI.set_runningdata = function(key, obj, type) {
@@ -371,7 +367,13 @@ UI.set_result = function(title, data, type) {
 		data = data[0]
 	}
 	children[0].innerHTML = title
-	children[1].appendChild(build_preview(renderjson(data)))
+	const render_level = appstate.getters.renderJSON_level()
+	if (render_level == 2)
+		children[1].appendChild(renderjson(data))
+	else if (render_level == 1)
+		children[1].appendChild(build_preview(renderjson(data)))
+	else
+		inline_images(children[1], stringify_display(data, undefined, 2))
 	children[1].title = new Date()
 	if (type === 'definition')
 		contentbox.innerHTML = ''
@@ -391,44 +393,90 @@ const paramslist = $('#params-list-js')
 const paramsform = $('form[name=params-form]')
 const executebutton = $('#execute-button-js')
 const filterbutton = $('#filter-button-js')
-const customlabels = $('#custom-infolabels-js')
-const custombooleans = $('#custom-infobooleans-js')
+const customlabels = $('#customlabels-js')
+const custombooleans = $('#custombooleans-js')
 
 $('#execution-container-js').addEventListener('click', () => UI.set_popoutinfo())
 
-const custominput = e => UI.emit('setcustominfo',
-	{[e.target === customlabels ? 'labels' : 'booleans']: e.target.value.split('\n')})
-const customenter = e => e.code === 'Enter' && custominput(e)
-customlabels.addEventListener('change', custominput)
-customlabels.addEventListener('keyup', customenter)
-custombooleans.addEventListener('change', custominput)
-custombooleans.addEventListener('keyup', customenter)
+const custominput = customtype => e =>
+	UI.emit('setcustominfo', {[customtype]: e.target.value.split('\n')})
+const customenter = customtype => e => e.code === 'Enter' && custominput(customtype)(e)
+
+customlabels.addEventListener('change', custominput('labels'))
+customlabels.addEventListener('keyup', customenter('labels'))
+custombooleans.addEventListener('change', custominput('booleans'))
+custombooleans.addEventListener('keyup', customenter('booleans'))
 
 UI.currentmethod = ''
 const ExecutionToolbox = {
 	isfiltered: false,
-	addparam: function(param, tabindex, popoutinfo, label) {
-		if (typeof param.type !== 'string' && param.type.length === 2 && param.type[0].type === 'null') {
-			if (Object.keys(param.type[1]).length === 1)
-				param.type = param.type[1].type
-			else
-				param.type = param.type[1]
+	get_param_uidef: function(param) {
+		const uidef = {id: param.id, name: param.name, required: param.required,
+			min: param.minimum, maximum: param.maximum}
+
+		if (param.name === 'filter') {
+			uidef.width = '300px'
+			uidef.type = Array.isArray(param.type) ? param.type : [param]
+			return uidef
 		}
-		// This is getting painful
-		const typeinfo = typeof param.type === 'string' ? param : param.type
-		if (Array.isArray(typeinfo) && typeinfo.every(p => p.enums)) {
-			typeinfo.type = 'string'
-			typeinfo.enums = [].concat(...typeinfo.map(t => t.enums))
+
+		// squash limited options to toggles or select
+		function reduce_enums(res, newtype) {
+			if (res == null)
+				return null
+			const newenums = 'enums' in newtype ? newtype.enums :
+				newtype.type === 'null' ? [''] :
+				newtype.type === 'boolean' ? ['true', 'false'] :
+				newtype.type === 'integer' && 'minimum' in newtype && 'maximum' in newtype ?
+					toolbox.range(newtype.minimum, newtype.maximum + 1).map(String) : null
+			if (!newenums) // this type can't be collapsed to enum, continue to prefills
+				return null
+
+			return res.concat(newenums)
 		}
-		if (typeinfo.type == 'string' && typeinfo.enums && typeinfo.enums.length > 5)
-			typeinfo.type = 'select'
-		// TODO: other param styles
-		// id: "List.Limits" needs some special lovin to display two inputs but work with 1 param
-		// Player.Zoom has 2 item enum plus integer 1 through 10, maybe a good idea for select
+		const reduce_types = Array.isArray(param.type) ? param.type : [param]
+		const reduce_result = reduce_types.reduce(reduce_enums, [])
+		if (reduce_result && reduce_result.length) {
+			if (!param.required && !reduce_result.includes(''))
+				reduce_result.unshift('')
+			if (reduce_result.length <= 6)
+				uidef.toggles = reduce_result
+			else {
+				uidef.type = 'select'
+				uidef.options = reduce_result.sort(compare.natural)
+			}
+			return uidef
+		}
+
+		// set prefills
+		if (uidef.id === 'List.Limits') {
+			uidef.prefills = ['', '{"end": 10}', '{"start": 10, "end": 20}', '{"end": 100}']
+		} else if (param.id === 'List.Sort') {
+			uidef.prefills = ['', '{"method": "random"}', '{"method": "dateadded", "order": "descending"}',
+				'{"method": "label", "ignorearticle": true}']
+		} else if (param.type === 'array' && param.items && param.items.enums) {
+			const enums = param.items.enums
+			uidef.prefills = ['', JSON.stringify([enums[0]])]
+			if (enums.length > 2 && enums.includes('art') && !enums.slice(0, 2).includes('art'))
+				uidef.prefills.push('["art"]')
+			if (enums.length > 1)
+				uidef.prefills.push(JSON.stringify(enums.slice(0, 2)))
+			if (enums.length > 2)
+				uidef.prefills.push(JSON.stringify(enums))
+		}
+
+		if (uidef.id === 'List.Sort')
+			uidef.width = '200px'
+		if (uidef.name == 'properties')
+			uidef.width = '250px'
+
+		return uidef
+	},
+	addparam: function(uidef, popoutinfo) {
 		let template
-		if (typeinfo.type === 'bool') // 'bool' is special for runningdata, just on/off
+		if (uidef.type === 'bool') // 'bool' is special for runningdata, just on/off
 			template = parambool_template
-		else if (typeinfo.type === 'select')
+		else if (uidef.type === 'select')
 			template = paramselect_template
 		else
 			template = param_template
@@ -449,82 +497,44 @@ const ExecutionToolbox = {
 		} else
 			li.classList.remove('has-popoutinfo')
 
-		labelE.textContent = label || param.name
-		input.name = param.name
-		if (typeinfo.type === 'boolean') {
-			this.prepare_toggler(input, li, ['true', 'false'], param.required)
-		} else if (['integer', 'number'].includes(typeinfo.type)) {
-			if (typeinfo.type === 'integer' && 'minimum' in param && 'maximum' in param
-			&& param.maximum - param.minimum <= 5) {
-				const options = toolbox.range(param.minimum, param.maximum + 1).map(n => '' + n)
-				this.prepare_toggler(input, li, options, param.required)
-			} else {
-				input.type = 'number'
-				if ('minimum' in param)
-					input.min = param.minimum
-				if ('maximum' in param)
-					input.max = param.maximum
-				if (typeinfo.type === 'number')
-					input.step = 'any'
-			}
-		} else if (param.id === 'Global.Toggle') {
-			const options = ['true', 'false', 'toggle']
-			this.prepare_toggler(input, li, options, param.required)
-		} else if (typeinfo.type == 'string' && typeinfo.enums) {
-			this.prepare_toggler(input, li, [...typeinfo.enums], param.required)
-		} else if (typeinfo.type == 'select') {
-			const options = typeinfo.enums.sort()
-			if (!param.required && !options.includes(''))
-				options.unshift('')
-			options.forEach(opt => input.options[input.options.length] = new Option(opt))
-		} else if (typeinfo.length === 2 && typeinfo[0].type === 'boolean' && typeinfo[1].type === 'string'
-		&& typeinfo[1].enums && typeinfo[1].enums.length <= 3) {
-			// awkward. Seems to be just Addons.GetAddons 'enabled' and 'installed' params, no simpler way to ID it
-			const options = ['true', 'false', ...typeinfo[1].enums]
-			this.prepare_toggler(input, li, options, param.required)
-		} else if (param.id === 'List.Limits') {
-			const options = ['{"end": 10}', '{"start": 10, "end": 20}', '{"end": 20}']
-			this.prepare_switcher(input, li, options, param.required)
-		} else if (param.id === 'List.Sort') {
-			const options = ['{"method": "random"}', '{"method": "dateadded", "order": "descending"}',
-				'{"method": "label", "ignorearticle": true}']
-			this.prepare_switcher(input, li, options, param.required)
-			input.style.width = '200px'
-		} else if (typeinfo.type === 'array' && param.items && param.items.enums) {
-			const enums = param.items.enums
-			const options = []
-			options.push(JSON.stringify([enums[0]]))
-			if (enums.length > 2 && enums.includes('art') && !enums.slice(0, 2).includes('art'))
-				options.push('["art"]')
-			if (enums.length > 1)
-				options.push(JSON.stringify(enums.slice(0, 2)))
-			if (enums.length > 2)
-				options.push(JSON.stringify(enums))
-			this.prepare_switcher(input, li, options, param.required)
-			if (typeinfo.name == 'properties')
-				input.style.width = '250px'
-		} else if (param.name === 'filter') {
-			this.add_filter(input, typeinfo, li)
-			input.style.width = '300px'
+		labelE.textContent = uidef.label || uidef.name
+		input.name = uidef.name
+		// TODO: other param styles
+		// id: "List.Limits" needs some special lovin to display two inputs but work with 1 param
+		// Player.Zoom has 2 item enum plus integer 1 through 10, maybe a good idea for select
+		// Fancy filter with three inputs
+		// Application.SetVolume, toggle between increment / decrement / integer input?
+		if (uidef.toggles) {
+			this.prepare_toggler(input, li, uidef.toggles)
+		} else if (uidef.prefills) {
+			this.prepare_switcher(input, li, uidef.prefills)
+		} else if (uidef.type == 'select') {
+			uidef.options.forEach(opt => input.options[input.options.length] = new Option(opt))
+		} else if (['integer', 'number'].includes(uidef.type)) {
+			input.type = 'number'
+			if ('min' in uidef)
+				input.min = uidef.min
+			if ('max' in uidef)
+				input.max = uidef.max
+			if (uidef.type === 'number')
+				input.step = 'any'
+		} else if (uidef.name === 'filter') {
+			this.add_filter(input, uidef.type, li)
 		}
-
-		if (param.required)
+		if (uidef.width)
+			input.style.width = uidef.width
+		if (uidef.required)
 			input.required = true
-		if (tabindex)
-			input.tabIndex = tabindex
+
 		paramslist.appendChild(clone)
-		if (tabindex === 1)
-			input.focus()
 		return input
 	},
 	add_filter: function(input, typeinfo, li) {
-		if (!Array.isArray(typeinfo))
-			typeinfo = [typeinfo]
 		const options = []
 		const complex = typeinfo.find(type => type.id && type.id.startsWith('List.Filter.'))
 		if (complex) {
-			const rules = complex.type.find(type =>
-				type.id && type.id.startsWith('List.Filter.Rule.')).properties
+			const rules = Array.isArray(complex.type) ? complex.type.find(type =>
+				type.id && type.id.startsWith('List.Filter.Rule.')).properties : complex.properties
 			toolbox.range(4).forEach(() => {
 				const field = toolbox.randomitem(rules.field.enums)
 				const operator = toolbox.randomitem(rules.operator.enums)
@@ -552,9 +562,9 @@ const ExecutionToolbox = {
 		}
 		this.prepare_switcher(input, li, options)
 	},
-	prepare_toggler: function(input, parent, options, required) {
-		if (!required && !options.includes(''))
-			options.push('')
+	prepare_toggler: function(input, parent, options) {
+		// Flips through a small number of possible values
+
 		// input.readOnly = true // Bah! validation ignores readOnly, so workaroundit!
 		input.dataset.readonly = true
 		input.classList.add('toggler')
@@ -572,9 +582,8 @@ const ExecutionToolbox = {
 			e.preventDefault()
 		})
 	},
-	prepare_switcher: function(input, parent, options, required) {
-		if (!required && !options.includes(''))
-			options.push('')
+	prepare_switcher: function(input, parent, options) {
+		// Flips through a few prefilled options for freeform parameter values (mostly complex objects)
 		const rotate = () => input.value = options[(options.indexOf(input.value) + 1) % options.length]
 		const switcher = $('.switcher-js', parent)
 		switcher.addEventListener('click', e => {
@@ -587,18 +596,17 @@ const ExecutionToolbox = {
 UI.set_method = function(name, method) {
 	UI.currentmethod = name
 	executebutton.classList.remove('nodisplay')
+	executebutton.focus()
 	filterbutton.classList.add('nodisplay')
 	methodtitle.children[0].textContent = name
 	if (!method) return
 	if (method.description)
 		methodtitle.children[1].textContent = ' ' + method.description
 	paramslist.innerHTML = ''
-	let count = 0
 	for (let param of method.params) {
-		count += 1
-		ExecutionToolbox.addparam(param, count, stringify_display(param, undefined, 2))
+		const ui_def = ExecutionToolbox.get_param_uidef(param)
+		ExecutionToolbox.addparam(ui_def, stringify_display(param, undefined, 2))
 	}
-	executebutton.tabIndex = count + 1
 }
 function input_setvalue(input, value='') {
 	if (input.type === 'checkbox')
@@ -652,24 +660,20 @@ UI.set_runningsections = function(params) {
 	methodtitle.children[0].textContent = ''
 	methodtitle.children[1].textContent = ''
 	paramslist.innerHTML = ''
-	let count = 0
 	for (let param of params) {
-		count += 1
-		const checkbox = ExecutionToolbox.addparam({name: param[0], type: 'bool'}, count, undefined, param[1])
+		const checkbox = ExecutionToolbox.addparam({name: param[0], type: 'bool', label: param[1]})
 		checkbox.addEventListener('change', () => {
 			UI.emit('set_runningparam', {param: param[0], visible: checkbox.checked})
 			if (param[0].startsWith('custom')) {
 				if (param[0].endsWith('labels'))
 					customlabels.parentNode.classList.toggle('nodisplay', !checkbox.checked)
-				else
+				else if (param[0].endsWith('booleans'))
 					custombooleans.parentNode.classList.toggle('nodisplay', !checkbox.checked)
 			}
 		})
 		checkbox.parentNode.parentNode.dataset.forcedvisible = param[2]
 		UI.add_runningsection(param[0], param[1])
 	}
-	customlabels.tabIndex = ++count
-	custombooleans.tabIndex = ++count
 }
 UI.set_custominfo_options = function(labels, booleans) {
 	if (labels)
@@ -678,9 +682,69 @@ UI.set_custominfo_options = function(labels, booleans) {
 		custombooleans.value = booleans.join('\n')
 }
 
-const dialogwindow = $('#dialog-js')
-$('#open-settings-button-js').addEventListener('click', () => dialogwindow.classList.remove('nodisplay'))
-$('#close-settings-button-js').addEventListener('click', () => dialogwindow.classList.add('nodisplay'))
-$('#switch-fullart-js').addEventListener('change', e => UI.emit('setswitch', 'show_allart', e.target.checked))
-$('#switch-logbutton-js').addEventListener('change', e => UI.emit('setswitch', 'show_logbutton', e.target.checked))
-$('#switch-webpdb-js').addEventListener('change', e => UI.emit('setswitch', 'show_pdbbutton', e.target.checked))
+UI.get_themes = () => $ls('link.themesheet').map(e => e.title)
+UI.set_theme = new_theme => {
+	// Firefox doesn't like the way Vue disables stylesheets
+	let theme_set = false
+	for (const elem of $ls('link.themesheet')) {
+		if (elem.title == new_theme) {
+			elem.disabled = false
+			theme_set = true
+		} else
+			elem.disabled = true
+		if (!theme_set)
+			$ls('link.themesheet').disabled = false
+	}
+}
+UI.hidesplash = function() {
+	const splash = $('#splash-js')
+	splash.addEventListener('transitionend', () => {
+		splash.remove()
+	})
+	splash.offsetWidth // make sure it's drawn so there is actually a transition
+	splash.classList.add('fadeout')
+}
+UI.set_subtitle = function(subtitle) {
+	$('#subtitle-js').innerText = subtitle
+}
+UI.configure_renderjson = function(fancylevel) {
+	if (fancylevel === 1) {
+		// syntax highlighting and shorten long strings
+		renderjson.set_show_to_level(10).set_icons('', '').set_max_string_length('none')
+	} else if (fancylevel === 2) {
+		// collapsible
+		renderjson.set_show_to_level(2).set_icons('⊕', '⊖').set_max_string_length(60)
+	}
+}
+UI.show_log_description = function(visible) {
+	$('#log-desc-js').classList.toggle('nodisplay', !visible)
+}
+UI.show_pdb_description = function(visible) {
+	$('#webpdb-desc-js').classList.toggle('nodisplay', !visible)
+}
+
+Vue.component('icon-button', {
+	template: `<button type="button" @click="click" :title="title" class="flatbutton clearbutton"
+		:class="buttonClass"><i class="material-icons" :class="iconClass">{{ icon }}</i></button>`,
+	props: ['title', 'icon', 'iconClass', 'buttonClass'],
+	methods: {
+		click() { this.$emit('click') }
+	}
+})
+Vue.component('dialog-window', {
+	template: `<div class="dialog" @click="close">
+		<div class="dialog-window" @click.stop>
+			<h1>{{ header }}</h1>
+			<div><slot></slot></div>
+			<div style="padding-top: 10px; height: 60px; display: flex;">
+				<i style="flex: 1; width: 250px;">{{ description }}</i>
+				<button type="button" @click="close"
+					class="flatbutton action-button close-button">Close</button>
+			</div>
+		</div>
+	</div>`,
+	props: ['header', 'description'],
+	methods: {
+		close() { this.$emit('close') }
+	}
+})

@@ -1,4 +1,4 @@
-.header--titleandbuttons {
+.header__titleandbuttons {
 	background-color: hsl(0, 100%, 83%);
 }
 a#maintitle {
@@ -12,7 +12,7 @@ a#maintitle {
 .conbox {
 	background-color: hsl(30, 100%, 80%);
 }
-.conbox--content {
+.conbox__content {
 	background-color: hsl(30, 100%, 80%);
 }
 .footer {

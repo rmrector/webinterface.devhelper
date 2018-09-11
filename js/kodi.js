@@ -2,6 +2,8 @@
 
 const TIMEOUT = 60000
 
+// Kodi doesn't like requests > 1024 bytes
+let LIMIT_WEBSOCKET = 1024
 const jskodi = {}
 
 jskodi.imageencode = image =>
@@ -10,7 +12,7 @@ jskodi.imagedecode = image =>
 	decodeURIComponent(image.slice(8, -1))
 
 /**
- * A connection to Kodi
+ * A connection to Kodi's websocket port
  * @param {string|URL} host
  * @param {Object} websocket_options
  * @param {string} websocket_options.base Websocket server reverse proxy path
@@ -146,7 +148,7 @@ jskodi.Connection = class {
 			}
 			const request = {jsonrpc: '2.0', method, params, id}
 			const strequest = JSON.stringify(request)
-			if (strequest.length > 1024) {
+			if (LIMIT_WEBSOCKET && strequest.length > LIMIT_WEBSOCKET) {
 				reject(this.build_connection_error('too-long', "Request is too long for Kodi websocket"))
 				// TODO: No CORS, only works on same host
 				if (false) resolve(this.http_call(method, params, {id, logcall, alldata}))
@@ -220,21 +222,26 @@ jskodi.Connection = class {
 	}
 	async get_infos(infos, booleans=false) {
 		if (!infos || !infos.length) return {}
-		// Kodi doesn't like requests > 1024 bytes
 		const method = !booleans ? 'XBMC.GetInfoLabels' : 'XBMC.GetInfoBooleans'
-		const listoflists = infos.reduce((result, item) => {
-			if (result.length && result[result.length - 1].join('","').length + item.length < 930)
-				result[result.length - 1].push(item)
-			else
-				result.push([item])
+		if (LIMIT_WEBSOCKET) {
+			const result = {}
+			const listoflists = infos.reduce((result, item) => {
+				if (result.length && result[result.length - 1].join('","').length + item.length <
+						LIMIT_WEBSOCKET - 90)
+					result[result.length - 1].push(item)
+				else
+					result.push([item])
+				return result
+			}, [])
+			for (const list of listoflists) {
+				Object.assign(result, await this.call(method, [list],
+					{id: "runningdata", logcall: debug.runningdata}))
+			}
 			return result
-		}, [])
-		const result = {}
-		for (const list of listoflists) {
-			Object.assign(result, await this.call(method, [list],
-				{id: "runningdata", logcall: debug.runningdata}))
+		} else {
+			return await this.call(method, [infos],
+				{id: "runningdata", logcall: debug.runningdata})
 		}
-		return result
 	}
 	ping() {
 		return this.call('JSONRPC.Ping', undefined, {id: "ping", logcall: debug.ping})
@@ -246,9 +253,12 @@ jskodi.Connection = class {
 
 // TODO: Somehow build the info lists automatically, at least most of them
 
-// INFO: Integer labels don't work, like "Player.Progress"
+// INFO: Integer only labels don't work, like "Player.Progress"
 // Contaner InfoBooleans 'OnNext', 'OnScrollNext', 'OnScrollPrevious', 'OnPrevious' are triggers for
 //  animations and are so short they aren't much use here
+
+// TODO: Missing PVR and game info. weather
+
 jskodi.skinlabels = {}
 
 const pathlistitem_labels = ['FileName', 'Path', 'FolderName', 'FolderPath', 'FileNameAndPath', 'FileExtension', 'Size']
@@ -256,34 +266,6 @@ const pathlistitem_labels = ['FileName', 'Path', 'FolderName', 'FolderPath', 'Fi
 const listitem_bools = ['IsFolder', 'IsPlaying', 'IsResumable', 'IsCollection', 'IsSelected', 'IsStereoscopic',
 	'IsParentFolder', 'Property(IsSpecial)', 'Property(Addon.IsEnabled)', 'Property(Addon.IsInstalled)',
 	'Property(Addon.HasUpdate)', 'Property(Addon.Orphaned)'].map(l => 'ListItem.' + l)
-
-function get_default_artlabels() {
-	// INFO: 'icon' isn't set for add-ons and programs and such, have to use ListItem.Icon
-	const videoarttypes = ['poster', 'fanart', 'banner', 'landscape', 'clearart', 'clearlogo', 'characterart',
-		'discart', 'thumb', 'icon', 'fanart1', 'fanart2', 'screenshot']
-	const artistarttypes = ['fanart', 'fanart1', 'fanart2', 'banner', 'landscape', 'clearart', 'clearlogo', 'thumb']
-	// 'fanart' is fallback from artist, 'poster' is the album cover/thumb for music videos
-	const albumarttypes = ['thumb', 'discart', 'back', 'spine', 'fanart', 'poster']
-	const basemusicarttypes = Array.from(new Set(artistarttypes.concat(albumarttypes)))
-	const videoartworktypes = videoarttypes.concat(videoarttypes.map(t => 'tvshow.' + t))
-		.concat(videoarttypes.map(t => 'season.' + t)).concat(videoarttypes.map(t => 'set.' + t))
-	const musicartworktypes = basemusicarttypes.concat(artistarttypes.map(t => 'artist.' + t))
-		.concat(artistarttypes.map(t => 'artist1.' + t)).concat(albumarttypes.map(t => 'album.' + t))
-		.concat(artistarttypes.map(t => 'albumartist.' + t)).concat(artistarttypes.map(t => 'albumartist1.' + t))
-
-	const video_artlabels = videoartworktypes.map(art => `ListItem.Art(${art})`)
-		.concat(videoartworktypes.map(art => `Container.Art(${art})`))
-		.concat(videoartworktypes.map(art => `Container.ListItem.Art(${art})`))
-		.concat(videoartworktypes.map(art => `Player.Art(${art})`))
-		.sort()
-
-	const music_artlabels = musicartworktypes.map(art => `ListItem.Art(${art})`)
-		.concat(musicartworktypes.map(art => `Container.Art(${art})`))
-		.concat(musicartworktypes.map(art => `Container.ListItem.Art(${art})`))
-		.concat(musicartworktypes.map(art => `Player.Art(${art})`))
-		.sort()
-	return [video_artlabels, music_artlabels]
-}
 
 jskodi.skinlabels.labels = {
 	visiblewindows: {title: 'Visible windows', order: 0, special: 'justkey', visible: true,
@@ -299,8 +281,9 @@ jskodi.skinlabels.labels = {
 			? jskodi.imageencode(value) : value],
 		list: []},
 	player: {title: 'Player InfoLabels', order: 9,
-		list: ['Time', 'FinishTime', 'TimeRemaining', 'Duration', 'SeekTime', 'SeekStepSize',
-			'StartTime', 'Title', 'TimeSpeed', 'Chapter', 'ChapterCount']
+		list: ['Time', 'FinishTime', 'TimeRemaining', 'Duration', 'SeekTime', 'SeekStepSize', 'PlaySpeed',
+			'StartTime', 'Title', 'TimeSpeed', 'Chapter', 'ChapterCount', 'ChapterName', 'Volume',
+			'SubtitleDelay', 'AudioDelay', 'SeekOffset']
 			.map(l => 'Player.' + l).concat(['PlaylistPosition', 'PlaylistLength', 'LastPlayed',
 				'PlayCount', 'AudioLanguage', 'SubtitlesLanguage'].map(l => 'VideoPlayer.' + l))
 			.concat(['PlaylistPosition', 'PlaylistLength'].map(l => 'MusicPlayer.' + l))
@@ -386,7 +369,8 @@ jskodi.skinlabels.labels = {
 			'Forwarding2x', 'Forwarding4x', 'Forwarding8x', 'Forwarding16x', 'Forwarding32x', 'Rewinding2x',
 			'Rewinding', 'Rewinding4x', 'Rewinding8x', 'Rewinding16x', 'Rewinding32x', 'Caching', 'DisplayAfterSeek',
 			'Seeking', 'ShowTime', 'ShowInfo', 'IsInternetStream', 'Muted', 'Process(videohwdecoder)', 'TempoEnabled',
-			'IsTempo', 'HasGame'].map(l => 'Player.' + l)
+			'IsTempo', 'HasGame', 'PauseEnabled', 'SeekEnabled', 'HasResolutions', 'HasPrograms',
+			'FrameAdvance'].map(l => 'Player.' + l)
 			.concat('MusicPlayer.HasNext', 'MusicPlayer.HasPrevious', 'MusicPartyMode.Enabled')
 			.concat(['IsRandom', 'IsRepeat', 'IsRepeatOne'].map(l => 'Playlist.' + l))
 			.concat(['UsingOverlays', 'IsFullscreen', 'HasMenu', 'HasInfo', 'HasSubtitles',
@@ -428,13 +412,11 @@ jskodi.skinlabels.set_customart = function(videoart, musicart) {
 	_labels.videoart.list = videoart
 	_labels.musicart.list = musicart
 }
-jskodi.skinlabels.set_defaultart = function() {
-	jskodi.skinlabels.set_customart(...get_default_artlabels())
-}
-jskodi.skinlabels.set_defaultart()
-jskodi.skinlabels.set_libraryart = async function() {
-	const libtypes = await get_library_arttypes()
-	const allart = arttypemap2infolabels(libtypes)
+
+jskodi.skinlabels.set_libraryart = async function(artmap) {
+	if (!artmap)
+		artmap = await jskodi.get_library_arttypes()
+	const allart = arttypemap2infolabels(artmap)
 	jskodi.skinlabels.set_customart(allart.video, allart.music)
 }
 jskodi.skinlabels.set_customart_bylist = function(typelist) {
@@ -451,8 +433,7 @@ jskodi.skinlabels.set_customart_bylist = function(typelist) {
 jskodi.skinlabels.set_visiblewindows = function(windowbools) {
 	_labels.visiblewindows.boollist = windowbools
 }
-
-async function get_library_arttypes() {
+jskodi.get_library_arttypes = async function() {
 	// In the library, but plugins can provide other artwork types
 	const mediatypes = {'movie': 'VideoLibrary.GetMovies', 'tvshow': 'VideoLibrary.GetTVShows',
 		'set': 'VideoLibrary.GetMovieSets', 'season': 'VideoLibrary.GetSeasons',
@@ -465,10 +446,10 @@ async function get_library_arttypes() {
 			{"properties":["art"], "limits": {"end": 5000}, "sort": {"method": "random"}})
 		const lists = data[type + 's'].map(mov => Object.keys(mov.art).filter(val => filterart(val)))
 		result[type] = toolbox.uniquelist([].concat(...lists))
-		await toolbox.sleep(100)
 	}
 	return result
 }
+
 function arttypemap2infolabels(typemap) {
 	const infosource = ['ListItem', 'Container', 'Container.ListItem', 'Player']
 	const result = {
