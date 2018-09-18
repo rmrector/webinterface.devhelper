@@ -27,6 +27,7 @@ v0.1.2 (2018-03-12)
 - Feature: add a couple of smaller functionality switches
 		</news>
 		<platform>all</platform>
+		<source>https://github.com/rmrector/webinterface.devhelper</source>
 		<assets>
 			<icon>icon.png</icon>
 			<fanart></fanart>
