@@ -227,7 +227,7 @@ jskodi.Connection = class {
 			const result = {}
 			const listoflists = infos.reduce((result, item) => {
 				if (result.length && result[result.length - 1].join('","').length + item.length <
-						LIMIT_WEBSOCKET - 90)
+						LIMIT_WEBSOCKET - 100)
 					result[result.length - 1].push(item)
 				else
 					result.push([item])
