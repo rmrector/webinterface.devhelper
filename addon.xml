@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<addon id="webinterface.devhelper" version="0.2.1" name="Devhelper web" provider-name="Ryan Rector">
+<addon id="webinterface.devhelper" version="0.2.2~adev" name="Devhelper web" provider-name="Ryan Rector">
 	<requires>
 		<import addon="xbmc.json" version="6.0.0"/>
 	</requires>
