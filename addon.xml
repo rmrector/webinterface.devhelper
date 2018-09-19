@@ -21,7 +21,6 @@ v0.2.0 (2018-09-13)
 		<source>https://github.com/rmrector/webinterface.devhelper</source>
 		<assets>
 			<icon>icon.png</icon>
-			<fanart></fanart>
 			<screenshot>resources/screenshot1.jpg</screenshot>
 			<screenshot>resources/screenshot2.jpg</screenshot>
 		</assets>
