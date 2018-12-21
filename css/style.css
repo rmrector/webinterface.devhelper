@@ -419,6 +419,11 @@ i.material-icons {
 }
 
 /* $Smethodlist */
+.clear-search {
+	position: absolute;
+	right: 10px;
+	top: 8px;
+}
 .method-list input {
 	margin-right: 10px;
 }

@@ -97,6 +97,7 @@ connection_input.addEventListener('keyup', e => {
 const methodtemplate = $('#method-template')
 const namespacetemplate = $('#namespace-template')
 const methodsearch = $('#method-search-js')
+const methodsearchclear = $('#method-search-clear-js')
 const methodlist = $('#method-list-js')
 const methodlist_toggle = $('#methodlist-toggle-button-js')
 
@@ -111,6 +112,13 @@ methodsearch.addEventListener('keyup', e => {
 	const filter = methodsearch.value.toLowerCase()
 	if (filter === methodlist.filtered)
 		return
+	methodlist.filter(filter)
+})
+methodsearchclear.addEventListener('click', () => {
+	methodsearch.value = ''
+	methodlist.filter('')
+})
+methodlist.filter = function(filter) {
 	methodlist.filtered = filter
 	let lastnamespace
 	for (let li of $ls('li', methodlist)) {
@@ -119,13 +127,14 @@ methodsearch.addEventListener('keyup', e => {
 				lastnamespace.classList.add('nodisplay')
 			lastnamespace = li
 			continue
-		}
+		} // beyond is for method LIs
 		if (!filter) {
 			if (lastnamespace) {
 				lastnamespace.classList.remove('nodisplay')
 				lastnamespace = null
 			}
-			li.classList.add('nodisplay')
+			if (appdata.currentaction && !appdata.currentaction.startsWith(li.dataset.namespace))
+				li.classList.add('nodisplay')
 			continue
 		}
 		const name = li.dataset.namespace.toLowerCase() + '.' + li.firstElementChild.textContent.toLowerCase()
@@ -137,7 +146,8 @@ methodsearch.addEventListener('keyup', e => {
 				lastnamespace = null
 		}
 	}
-})
+	methodsearchclear.classList.toggle('nodisplay', !filter)
+}
 methodlist.get_namespace = function(namespace) {
 	for (let li of $ls('li', this)) {
 		if (li.matches('.namespace-li-js') && li.firstElementChild.textContent === namespace)
@@ -172,7 +182,8 @@ UI.set_methodlist = function(methods) {
 	})
 }
 UI.focus_namespace = function(namespace) {
-	methodsearch.value = ''
+	if (methodlist.filtered)
+		return
 	for (let li of $ls('li', methodlist)) {
 		if (!li.classList.contains('namespace-li-js'))
 			li.classList.toggle('nodisplay', li.dataset.namespace !== namespace)
