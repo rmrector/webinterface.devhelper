@@ -350,7 +350,7 @@ jskodi.skinlabels.labels = {
 			'CurrentControl', 'CurrentControlID', 'BuildVersion'].map(l => 'System.' + l)
 			.concat(['AspectRatio', 'CurrentTheme', 'CurrentColourTheme', 'Font'].map(l => 'Skin.' + l))
 			.concat('Window.Property(xmlfile)', 'Weather.Conditions')
-			.concat(['IsDHCP', 'IPAddress', 'LinkState'].map(l => 'Network.' + l)).sort()},
+			.concat(['IsDHCP', 'IPAddress', 'LinkState', 'MacAddress'].map(l => 'Network.' + l)).sort()},
 	container: {title: 'Container InfoLabels', order: 8,
 		list: ['Content', 'Viewmode', 'SortMethod', 'SortOrder', 'PluginName', 'PluginCategory', 'ShowPlot',
 		'ShowTitle', 'NumPages', 'NumItems', 'CurrentPage', 'CurrentItem', 'Position', 'Column', 'Row',
