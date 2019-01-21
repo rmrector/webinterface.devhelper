@@ -47,8 +47,12 @@ jskodi.Connection = class {
 		async function prepare_connection(connection) {
 			const data = await connection.call('Application.GetProperties', {properties: ['name', 'version']})
 			connection.name = data.name + ' ' + data.version.major + '.' + data.version.minor
-			if (data.version.tag !== 'stable')
-				connection.name += ' ' + data.version.tag
+			if (data.version.tag !== 'stable') {
+				if (data.version.tag === 'releasecandidate')
+					connection.name += ' rc' + (data.version.tagversion || '')
+				else
+					connection.name += ' ' + data.version.tag + (data.version.tagversion || '')
+			}
 
 			let name = await connection.call('Settings.GetSettingValue', {setting: 'services.devicename'})
 			name = name.value
