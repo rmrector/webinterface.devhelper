@@ -189,8 +189,10 @@ const appdata = {
 		try {
 			const data = await this.connection.call(method, params, {alldata: true})
 			UI.set_result(`Result of '${method}'`, [data, req], 'result')
+			window.jsonrpc_result = data
 		} catch (err) {
 			UI.set_result(`Error calling '${method}'`, [err, req], 'error')
+			window.jsonrpc_result = err
 		}
 	},
 	addhost: function(host) {
