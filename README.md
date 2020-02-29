@@ -1,9 +1,9 @@
 ## Devhelper web
 
-A web interface to debug some bits of Kodi. Enable the web server and remote control, then install
-and access the web interface at "http://[hostname]:[port]/addons/webinterface.devhelper/", no need to
-change the 'Web interface' setting. With most browsers you can also unpack it and open 'index.html'
-right from your local file system without installing it as an add-on.
+A web interface to debug some bits of Kodi. Enable Kodi's web server and remote control, then install
+this add-on and access the web interface at "http://[kodihostname]:[port]/addons/webinterface.devhelper/",
+no need to change the 'Web interface' setting. With some browsers you can also unpack it and
+open 'index.html' right from your local file system without installing it as an add-on.
 
 Latest stable [installable zip](https://github.com/rmrector/repository.rector.stuff/raw/master/latest/webinterface.devhelper-latest.zip).
 
@@ -12,7 +12,7 @@ It can also be installed from my [development repo], which will keep it updated.
 [development repo]: (https://github.com/rmrector/repository.rector.stuff/raw/master/latest/repository.rector.stuff-latest.zip).
 
 There is a running data section that watches InfoLabels and InfoBooleans available to skins. This
-provides access to much of the information that would be used in a debug overlay during skinning,
+provides access to much of the information that would be used in a **debug overlay for skin design**,
 and there is plenty of room to show more info without obscuring your design.
 
 ![Running data](resources/screenshot1.jpg)

@@ -102,23 +102,25 @@ let debug = {
 		<div class="content-container">
 			<main id="content-js" class="content"><div class="result">
 				<p>You can add more Kodi hosts in the orange section to the far right along the top.
-				<p>Click the "Show running data" button in the right of the red section along the top to watch InfoLabels
-				and InfoBooleans, the same data available to skins.
+				<p>Click the "Show running data" button in the right of the red section along the top
+				to watch InfoLabels and InfoBooleans, the <strong>same data available to skins</strong>.
+				<p>All notifications from the connected Kodi host will show up on the right, and you can explore
+				JSON-RPC methods to the left, then fill out the params and execute it below.
+				<p>URLs power much of the functionality, which can be bookmarked for quick access.
+				<p>A details box will show up at the bottom of the column to the right, showing details
+				of certain items as your mouse cursor passes over them. Param details will show up here,
+				as well as the <strong>full JSON-RPC request</strong> over the title of method "Calling"
+				and "Result" info, and images from image URLs in requests and the "Available art"
+				running data section. Click on the item <strong>to pin the details</strong> so
+				that your mouse cursor can roam.
+				<p id="webpdb-desc-js" class="nodisplay">See
+				<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
+				for super Python debugging powers.</p>
 				<p id="log-desc-js" class="nodisplay">To use the "View Kodi log" button, add "special://logpath/"
 				as a media source in Kodi (pictures, music, or videos; the file browser won't work).
 				Do note that this can allow HTTP requests to Kodi to read everything in the same folder
 				as the log, including subdirectories.
 				On Windows this includes everything in Kodi's entire data directory.</p>
-				<p id="webpdb-desc-js" class="nodisplay">See
-				<a href="http://kodi.wiki/view/HOW-TO:Debug_Python_Scripts_with_Web-PDB" target="_blank">Web PDB</a>
-				for super Python debugging powers.</p>
-				<p>All notifications from the connected Kodi host will show up on the right, and you can explore
-				JSON-RPC methods to the left, then fill out the params and execute it below.
-				<p>URLs power much of the functionality, which can be bookmarked for quick access.
-				<p>A details box will show up at the bottom of the column to the right, showing details of certain items
-				as your mouse cursor passes over them. Param details will show up here, as well as the full JSON-RPC request over
-				the title of method "Calling" and "Result" info, and images from image URLs in requests and the
-				"Available art" running data section. Click on the item to pin the details so that your mouse cursor can roam.
 			</div></main>
 			<div class="notify-preview-box">
 				<div class="notify-box-buttons">
@@ -165,6 +167,7 @@ let debug = {
 	</div>
 	<address class="madeby">Made by <a href="https://github.com/rmrector" target="_blank">Ryan Rector</a></address>
 </footer>
+
 <div id="settings-dialog-vue">
 	<dialog-window header="Settings" v-show="show" @close="close">
 		<ul class="settings-list">
@@ -182,7 +185,7 @@ let debug = {
 </div>
 <div id="artlist-editor-vue">
 	<dialog-window header="Custom art list" v-show="show" @close="close"
-		description="Artwork types to look for in RunningData. One art type per line.">
+		description="Artwork types to look for in RunningData. One art type per line. &quot;Load from Kodi Library&quot; can take a long time.">
 		<div style="width: 710px;">
 			<div class="artlist__mediatype"><label>movie:
 				<textarea v-model.lazy="mediatype_movie"></textarea>
@@ -212,11 +215,12 @@ let debug = {
 <div class="splash" id="splash-js"></div>
 
 <div id="uishim-vue">
-	<link class="themesheet" href="css/rainbowhork.css" rel="stylesheet" title="Default theme"
+	<link class="themesheet-js" href="css/rainbowhork.css" rel="stylesheet" title="Default theme"
 		:disabled="shared.settings.theme !== 'Default theme'">
-	<link class="themesheet" href="css/light.css" rel="alternate stylesheet" title="Light theme"
+	<link class="themesheet-js" href="css/light.css" rel="alternate stylesheet" title="Light theme"
 		:disabled="shared.settings.theme !== 'Light theme'">
 </div>
+
 <script src="js/ui.js"></script>
 <script src="js/frontend.js"></script>
 <script>start_app()</script>

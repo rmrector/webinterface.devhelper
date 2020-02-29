@@ -1,4 +1,4 @@
-/* $RESET Fix box and simple reset + base */
+/* $$RESET Fix box and simple reset + base */
 html { box-sizing: border-box; }
 *, *:before, *:after { box-sizing: inherit; margin: 0; padding: 0; }
 ul { list-style: none; }
@@ -18,7 +18,7 @@ body {
 	box-shadow: inset 0 0 3px rgba(0, 0, 0, .3);
 }
 
-/* $LAYOUT */
+/* $$LAYOUT */
 .header__titleandbuttons, .conbox__content, .conbox__shortcontent, .content,
 .notifications, .footer, .execution-container {
 	padding: 10px;
@@ -48,13 +48,13 @@ body {
 }
 .method-list {
 	box-shadow: 0px 0px 4px 2px hsla(0, 0%, 0%, 0.35);
+	display: flex;
 	flex: 1 230px;
+	flex-direction: column;
+	height: 100%;
 	padding-left: 10px;
 	position: relative;
 	z-index: 1;
-	display: flex;
-	flex-direction: column;
-	height: 100%;
 }
 .content-box {
 	flex: 9999 1 500px;
@@ -126,7 +126,7 @@ body {
 	}
 }
 
-/* $GENERAL */
+/* $$GENERAL */
 pre {
 	font-family: 'Roboto Mono', monospace;
 	font-size: 13.5px;
@@ -176,10 +176,10 @@ i.material-icons {
 }
 @keyframes rotation {
 	from { transform: rotate(0deg); }
-	to { transform: rotate(359deg); }
+	to { transform: rotate(359.999deg); }
 }
 
-/* $BUTTONS */
+/* $$BUTTONS */
 .flatbutton {
 	border: none;
 	color: white;
@@ -229,8 +229,8 @@ i.material-icons {
 	transition: box-shadow 0.5s, background-color 0.5s, color 0.5s;
 }
 .action-button:disabled {
-	color: #CCCCCC;
 	background-color: #999999;
+	color: #CCCCCC;
 }
 .action-button:hover:not(:disabled) {
 	background-color: #777777;
@@ -250,8 +250,8 @@ i.material-icons {
 	background-color: hsla(0, 0%, 55%, 0.35);
 	border-radius: 5px;
 	display: inline-block;
-	padding: 5px;
 	margin: 5px;
+	padding: 5px;
 }
 /* Used in connectionbox and contentbox */
 .inline-popout {
@@ -268,7 +268,7 @@ i.material-icons {
 	box-shadow: 0px 0px 5px 2px hsla(222, 100%, 50%, 0.75);
 }
 
-/* $Sindex */
+/* $$index */
 .header__titleandbuttons {
 	font-size: 26px;
 	font-weight: bold;
@@ -290,9 +290,12 @@ i.material-icons {
 	margin-top: -10px;
 }
 .footer .footer-buttons button {
-	box-shadow: unset;
 	height: 40px;
 	padding-top: 9px;
+}
+footer .footer-buttons .clearbutton:hover {
+	background-color: hsla(0, 0%, 100%, 0.5);
+	box-shadow: unset;
 }
 .footer .madeby {
 	width: 100%;
@@ -304,8 +307,8 @@ i.material-icons {
 .splash {
 	background-color: white;
 	bottom: 0;
-	position: absolute;
 	left: 0;
+	position: absolute;
 	right: 0;
 	top: 0;
 	transition: opacity 0.2s;
@@ -344,7 +347,7 @@ i.material-icons {
 	margin-right: 5px;
 }
 
-/* $Sconnectionbox */
+/* $$connectionbox */
 .conbox__content input {
 	margin-left: 5px;
 }
@@ -418,7 +421,7 @@ i.material-icons {
 	background-color: hsla(0, 0%, 50%, 0.75);
 }
 
-/* $Smethodlist */
+/* $$methodlist */
 .clear-search {
 	position: absolute;
 	right: 10px;
@@ -445,7 +448,7 @@ i.material-icons {
 	top: 0;
 }
 
-/* $Scontentbox */
+/* $$contentbox */
 .runningdata-section {
 	max-width: 500px;
 	vertical-align: top;
@@ -545,7 +548,7 @@ i.material-icons {
 	color: hsl(0, 50%, 35%);
 }
 
-/* $Sexecutionbox */
+/* $$executionbox */
 .execution-container form {
 	align-items: stretch;
 	display: flex;
@@ -625,3 +628,4 @@ i.material-icons {
 .renderjson .boolean { color: blueviolet; }
 .renderjson .key    { color: darkblue; }
 .renderjson .keyword { color: blue; }
+.renderjson .closure, .renderjson .disclosure { color: hsla(240, 101%, 56%, 0.5); }

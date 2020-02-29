@@ -4,12 +4,13 @@ const TIMEOUT = 60000
 
 // Kodi doesn't like requests > 1024 bytes
 let LIMIT_WEBSOCKET = 1024
+
 const jskodi = {}
 
-jskodi.imageencode = image =>
-	image.startswith('image://') ? image : 'image://' + encodeURIComponent(image) + '/'
-jskodi.imagedecode = image =>
-	decodeURIComponent(image.slice(8, -1))
+jskodi.imageencode = image_url =>
+	image_url.startswith('image://') ? image_url : 'image://' + encodeURIComponent(image_url) + '/'
+jskodi.imagedecode = image_url =>
+	image_url.startswith('image://') ? decodeURIComponent(image_url.slice(8, -1)) : image_url
 
 /**
  * A connection to Kodi's websocket port
@@ -186,21 +187,22 @@ jskodi.Connection = class {
 			this.socket.send(strequest)
 		})
 	}
-	http_call(method, params, {id=undefined, logcall=debug.other_jsonrpc, alldata=false}={}) {
+	async http_call(method, params, {id=undefined, logcall=debug.other_jsonrpc, alldata=false}={}) {
 		if (id == null)
 			id = this.nextid++
 		const request = {jsonrpc: '2.0', method, params, id}
 		if (logcall)
 			console.log('Request', request)
-		return fetch(this.host + '/jsonrpc', {method: 'POST', body: JSON.stringify(request),
-			headers: {'Content-Type': 'application/json'}
-		}).then(r => r.json()).then(data => {
-			if (logcall)
-				console.log('Result', data)
-			if (data.result)
-				return alldata ? data : data.result
-			throw (alldata ? data : data.error) || this.build_connection_error('no-result')
-		})
+		let data = await fetch(this.host + '/jsonrpc', {
+			method: 'POST',
+			body: JSON.stringify(request),
+			headers: { 'Content-Type': 'application/json' }
+		}).json()
+		if (logcall)
+			console.log('Result', data)
+		if (data.result)
+			return alldata ? data : data.result
+		throw (alldata ? data : data.error) || this.build_connection_error('no-result')
 	}
 	async populatedata() {
 		const args = {getmetadata: true}

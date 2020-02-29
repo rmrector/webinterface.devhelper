@@ -2,12 +2,12 @@
 	background-color: hsl(0, 100%, 83%);
 }
 a#maintitle {
-	background: linear-gradient(to right, hsla(0, 100%, 17%, 1), hsla(39, 100%, 13%, 1),
+	background-image: linear-gradient(to right, hsla(0, 100%, 17%, 1), hsla(39, 100%, 13%, 1),
 		hsla(60, 100%, 11%, 1), hsla(120, 100%, 12%, 1), hsla(180, 100%, 13%, 1),
 		hsla(240, 100%, 20%, 1), hsla(300, 89%, 15%, 1));
 	color: transparent;
 	-webkit-background-clip: text;
-	background-clip: text;
+	        background-clip: text;
 }
 .conbox {
 	background-color: hsl(30, 100%, 80%);

@@ -107,7 +107,7 @@ methodlist_toggle.addEventListener('click', () => {
 })
 methodlist.filtered = ''
 methodsearch.addEventListener('keyup', e => {
-	if (e.keyCode === 13)
+	if (e.keyCode === 13) // Enter key
 		return
 	const filter = methodsearch.value.toLowerCase()
 	if (filter === methodlist.filtered)
@@ -693,19 +693,19 @@ UI.set_custominfo_options = function(labels, booleans) {
 		custombooleans.value = booleans.join('\n')
 }
 
-UI.get_themes = () => $ls('link.themesheet').map(e => e.title)
+UI.get_themes = () => $ls('link.themesheet-js').map(elm => elm.title)
 UI.set_theme = new_theme => {
 	// Firefox doesn't like the way Vue disables stylesheets
 	let theme_set = false
-	for (const elem of $ls('link.themesheet')) {
+	for (const elem of $ls('link.themesheet-js')) {
 		if (elem.title == new_theme) {
 			elem.disabled = false
 			theme_set = true
 		} else
 			elem.disabled = true
-		if (!theme_set)
-			$ls('link.themesheet').disabled = false
 	}
+	if (!theme_set)
+		$ls('link.themesheet-js')[0].disabled = false
 }
 UI.hidesplash = function() {
 	const splash = $('#splash-js')
