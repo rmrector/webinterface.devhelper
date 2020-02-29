@@ -312,7 +312,7 @@ store._connections = JSON.parse(localStorage.getItem(CONNECTIONS_KEY))
 store._custom = JSON.parse(localStorage.getItem(CUSTOMINFO_KEY))
 store._theme = JSON.parse(localStorage.getItem(THEME_KEY))
 store._scriptwindows = JSON.parse(localStorage.getItem(SCRIPTWINDOWS_KEY))
-store._artmap = JSON.parse(localStorage.getItem(ARTMAP_KEY)) || {}
+store._artmap = JSON.parse(localStorage.getItem(ARTMAP_KEY))
 store._switches = JSON.parse(localStorage.getItem(SWITCHES_KEY)) || {}
 
 const SWITCHES = [
@@ -347,7 +347,17 @@ function start_app() {
 			'script-nextup-notification-PostPlayInfo.xml', 'script-nextup-notification-NextUpInfo.xml',
 			'script-nextup-notification-StillWatchingInfo.xml', 'script-nextup-notification-UnwatchedInfo.xml',
 			'script-stinger-notification-Notification.xml', 'settings_gui.xml' /* My OSMC */]
-	appstate.shared.settings.artmap = store._artmap
+	appstate.shared.settings.artmap = store._artmap ? store._artmap : {
+		"movie": ["banner", "clearart", "clearlogo", "discart", "fanart", "poster", "thumb", "keyart", "landscape", "characterart"],
+		"set": ["fanart", "poster", "banner", "clearlogo", "landscape", "keyart", "clearart", "discart"],
+		"tvshow": ["banner", "characterart", "clearart", "clearlogo", "fanart", "landscape", "poster", "keyart"],
+		"season": ["poster", "banner", "landscape", "fanart"],
+		"episode": ["thumb", "fanart"],
+		"musicvideo": ["artistthumb", "clearlogo", "discart", "fanart", "poster", "thumb", "banner", "landscape", "clearart"],
+		"artist": ["fanart", "thumb", "banner", "clearart", "clearlogo", "landscape"],
+		"album": ["thumb", "discart", "back", "spine"],
+		"song": ["thumb"]
+	}
 	for (const mediatype of MEDIATYPES) {
 		if (!(mediatype in appstate.shared.settings.artmap))
 			appstate.shared.settings.artmap[mediatype] = []

@@ -449,7 +449,9 @@ jskodi.get_library_arttypes = async function() {
 	const result = {}
 	for (const type in mediatypes) {
 		const data = await appdata.connection.call(mediatypes[type],
-			{"properties":["art"], "limits": {"end": 5000}, "sort": {"method": "random"}})
+			{"properties":["art"], "limits": {"end": 2000}, "sort": {"method": "random"}})
+		if (!(type + 's' in data))
+			continue;
 		const lists = data[type + 's'].map(mov => Object.keys(mov.art).filter(val => filterart(val)))
 		result[type] = toolbox.uniquelist([].concat(...lists))
 	}
