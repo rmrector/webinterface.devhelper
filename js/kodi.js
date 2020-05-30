@@ -297,7 +297,7 @@ jskodi.skinlabels.labels = {
 			.map(l => 'Playlist.' + l)).sort()},
 	videoplayer: {title: 'VideoPlayer InfoLabels', order: 10,
 		list: ['TVShowTitle', 'Plot', 'Episode', 'Season', 'Genre', 'Director', 'AudioLanguage',
-			'Year', 'Rating', 'MPAA', 'CastAndRole', 'Album', 'Artist', 'Studio', 'Writer', 'Tagline', 'DBID',
+			'Year', 'Rating', 'MPAA', 'CastAndRole', 'Album', 'Artist', 'Studio', 'Writer', 'Tagline', 'DBID', 'IMDBNumber',
 			'UserRating', 'PlotOutline', 'SubtitlesLanguage', 'Cast', 'Title'].sort().map(l => 'VideoPlayer.' + l)},
 	musicplayer: {title: 'MusicPlayer InfoLabels', order: 11,
 		list: ['Album', 'Property(Album_Mood)', 'Property(Album_Style)', 'Property(Album_Theme)', 'Artist',
