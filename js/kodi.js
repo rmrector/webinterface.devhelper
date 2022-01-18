@@ -274,6 +274,12 @@ const listitem_bools = ['IsFolder', 'IsPlaying', 'IsResumable', 'IsCollection', 
 	'IsParentFolder', 'Property(IsSpecial)', 'Property(Addon.IsEnabled)', 'Property(Addon.IsInstalled)',
 	'Property(Addon.HasUpdate)', 'Property(Addon.Orphaned)'].map(l => 'ListItem.' + l)
 const uniqueid_labels = ['tvdb', 'imdb', 'tmdb', 'anidb', 'tadb'].map(l => `UniqueID(${l})`)
+const music_properties = ['Album_Mood', 'Album_Style', 'Album_Theme', 'Album_Type', 'Album_Label', 'Album_Description',
+	'Artist_Born', 'Artist_Died', 'Artist_Formed', 'Artist_Mood', 'Artist_Disbanded', 'Artist_YearsActive',
+	'Artist_Instrument', 'Artist_Description', 'Artist_Style', 'Artist_Genre', 'Artist_Sortname', 'Artist_Type',
+	'Artist_Gender', 'Artist_Disambiguation', 'Role.Arranger', 'Role.Composer', 'Role.Conductor', 'Role.DJMixer',
+	'Role.Engineer', 'Role.Lyricist', 'Role.Mixer', 'Role.Orchestra', 'Role.Producer', 'Role.Remixer']
+	.map(p => `Property(${p})`)
 
 jskodi.skinlabels.labels = {
 	visiblewindows: {title: 'Visible windows', order: 0, special: 'justkey', visible: true,
@@ -303,17 +309,10 @@ jskodi.skinlabels.labels = {
 			'UserRating', 'PlotOutline', 'SubtitlesLanguage', 'Cast', 'Title', 'TvShowDBID']
 				.concat(uniqueid_labels).sort().map(l => 'VideoPlayer.' + l)},
 	musicplayer: {title: 'MusicPlayer InfoLabels', order: 11,
-		list: ['Album', 'Property(Album_Mood)', 'Property(Album_Style)', 'Property(Album_Theme)', 'Artist',
-			'Property(Album_Type)', 'Property(Album_Label)', 'Property(Album_Description)', 'Property(Artist_Born)',
-			'Property(Artist_Died)', 'Property(Artist_Formed)', 'Property(Artist_Mood)', 'Property(Artist_Disbanded)',
-			'Property(Artist_YearsActive)', 'Property(Artist_Instrument)', 'Genre', 'Property(Artist_Description)',
-			'Property(Artist_Style)', 'Property(Artist_Genre)', 'Lyrics', 'Year', 'Rating', 'DiscNumber',
-			'Comment', 'TrackNumber', 'Contributors', 'ContributorAndRole', 'Mood', 'Property(Role.Arranger)',
-			'Property(Role.Composer)', 'Property(Role.Conductor)', 'Property(Role.DJMixer)', 'Property(Role.Engineer)',
-			'Property(Role.Lyricist)', 'Property(Role.Mixer)', 'Property(Role.Orchestra)', 'Property(Role.Producer)',
-			'Property(Role.Remixer)', 'UserRating', 'DBID', 'Title', 'Property(Artist_Sortname)',
-			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)', 'DiscTitle',
+		list: ['Album', 'Artist', 'Genre', 'Lyrics', 'Year', 'Rating', 'DiscNumber', 'Comment', 'TrackNumber',
+			'Contributors', 'ContributorAndRole', 'Mood', 'UserRating', 'DBID', 'Title', 'DiscTitle',
 			'ReleaseDate', 'OriginalDate', 'BPM', 'TotalDiscs']
+			.concat(music_properties)
 				.sort().map(l => 'MusicPlayer.' + l)
 			.concat(['Visualisation.Preset', 'Visualisation.Name'])},
 	playertech: {title: 'Player tech InfoLabels', order: 12,
@@ -335,16 +334,9 @@ jskodi.skinlabels.labels = {
 				.concat(uniqueid_labels).sort().map(l => 'ListItem.' + l)},
 	musiclistitem: {title: 'Music ListItem InfoLabels', order: 6,
 		list: ['Artist', 'Album', 'DiscNumber', 'TrackNumber', 'AlbumArtist', 'Comment', 'Contributors', 'Mood',
-			'ContributorAndRole', 'Property(Role.Arranger)', 'Property(Role.Composer)', 'Property(Role.Conductor)',
-			'Property(Role.DJMixer)', 'Property(Role.Engineer)', 'Property(Role.Lyricist)', 'Property(Role.Mixer)',
-			'Property(Role.Orchestra)', 'Property(Role.Producer)', 'Property(Role.Remixer)', 'Property(Artist_Sortname)',
-			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)', 'Property(Artist_Born)',
-			'Property(Artist_Died)', 'Property(Artist_Formed)', 'Property(Artist_Mood)', 'Property(Artist_Disbanded)',
-			'Property(Artist_YearsActive)', 'Property(Artist_Instrument)', 'Property(Artist_Description)',
-			'Property(Artist_Style)', 'Property(Artist_Genre)', 'Lyrics', 'Property(Album_Mood)',
-			'Property(Album_Style)', 'Property(Album_Theme)', 'Property(Album_Type)', 'Property(Album_Label)',
-			'Property(Album_Description)', 'DiscTitle', 'TotalDiscs', 'ReleaseDate', 'OriginalDate', 'BPM',
+			'ContributorAndRole', 'Lyrics', 'DiscTitle', 'TotalDiscs', 'ReleaseDate', 'OriginalDate', 'BPM',
 			'BitRate', 'SampleRate', 'MusicChannels', 'AlbumStatus', 'Property(Album_Duration)']
+			.concat(music_properties)
 				.sort().map(l => 'ListItem.' + l)},
 	addonlistitem: {title: 'Add-on ListItem InfoLabels', order: 7,
 		list: ['AddonBroken', 'AddonCreator', 'AddonDescription', 'AddonDisclaimer', 'AddonInstallDate', 'AddonSize',
