@@ -267,11 +267,13 @@ jskodi.Connection = class {
 
 jskodi.skinlabels = {}
 
-const pathlistitem_labels = ['FileName', 'Path', 'FolderName', 'FolderPath', 'FileNameAndPath', 'FileExtension', 'Size']
+const pathlistitem_labels = ['FileName', 'Path', 'FolderName', 'FolderPath', 'FileNameAndPath', 'FileExtension',
+	'Size', 'FileNameNoExtension']
 	.map(l => 'ListItem.' + l)
 const listitem_bools = ['IsFolder', 'IsPlaying', 'IsResumable', 'IsCollection', 'IsSelected', 'IsStereoscopic',
 	'IsParentFolder', 'Property(IsSpecial)', 'Property(Addon.IsEnabled)', 'Property(Addon.IsInstalled)',
 	'Property(Addon.HasUpdate)', 'Property(Addon.Orphaned)'].map(l => 'ListItem.' + l)
+const uniqueid_labels = ['tvdb', 'imdb', 'tmdb', 'anidb', 'tadb'].map(l => `UniqueID(${l})`)
 
 jskodi.skinlabels.labels = {
 	visiblewindows: {title: 'Visible windows', order: 0, special: 'justkey', visible: true,
@@ -289,7 +291,7 @@ jskodi.skinlabels.labels = {
 	player: {title: 'Player InfoLabels', order: 9,
 		list: ['Time', 'FinishTime', 'TimeRemaining', 'Duration', 'SeekTime', 'SeekStepSize', 'PlaySpeed',
 			'StartTime', 'Title', 'TimeSpeed', 'Chapter', 'ChapterCount', 'ChapterName', 'Volume',
-			'SubtitleDelay', 'AudioDelay', 'SeekOffset']
+			'SubtitleDelay', 'AudioDelay', 'SeekOffset', 'Chapters', 'CutList']
 			.map(l => 'Player.' + l).concat(['PlaylistPosition', 'PlaylistLength', 'LastPlayed',
 				'PlayCount', 'AudioLanguage', 'SubtitlesLanguage'].map(l => 'VideoPlayer.' + l))
 			.concat(['PlaylistPosition', 'PlaylistLength'].map(l => 'MusicPlayer.' + l))
@@ -298,7 +300,8 @@ jskodi.skinlabels.labels = {
 	videoplayer: {title: 'VideoPlayer InfoLabels', order: 10,
 		list: ['TVShowTitle', 'Plot', 'Episode', 'Season', 'Genre', 'Director', 'AudioLanguage',
 			'Year', 'Rating', 'MPAA', 'CastAndRole', 'Album', 'Artist', 'Studio', 'Writer', 'Tagline', 'DBID', 'IMDBNumber',
-			'UserRating', 'PlotOutline', 'SubtitlesLanguage', 'Cast', 'Title'].sort().map(l => 'VideoPlayer.' + l)},
+			'UserRating', 'PlotOutline', 'SubtitlesLanguage', 'Cast', 'Title', 'TvShowDBID']
+				.concat(uniqueid_labels).sort().map(l => 'VideoPlayer.' + l)},
 	musicplayer: {title: 'MusicPlayer InfoLabels', order: 11,
 		list: ['Album', 'Property(Album_Mood)', 'Property(Album_Style)', 'Property(Album_Theme)', 'Artist',
 			'Property(Album_Type)', 'Property(Album_Label)', 'Property(Album_Description)', 'Property(Artist_Born)',
@@ -309,7 +312,8 @@ jskodi.skinlabels.labels = {
 			'Property(Role.Composer)', 'Property(Role.Conductor)', 'Property(Role.DJMixer)', 'Property(Role.Engineer)',
 			'Property(Role.Lyricist)', 'Property(Role.Mixer)', 'Property(Role.Orchestra)', 'Property(Role.Producer)',
 			'Property(Role.Remixer)', 'UserRating', 'DBID', 'Title', 'Property(Artist_Sortname)',
-			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)']
+			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)', 'DiscTitle',
+			'ReleaseDate', 'OriginalDate', 'BPM', 'TotalDiscs']
 				.sort().map(l => 'MusicPlayer.' + l)
 			.concat(['Visualisation.Preset', 'Visualisation.Name'])},
 	playertech: {title: 'Player tech InfoLabels', order: 12,
@@ -326,10 +330,12 @@ jskodi.skinlabels.labels = {
 			'Votes', 'RatingAndVotes', 'MPAA', 'CastAndRole', 'DBID', 'Cast', 'DBTYPE', 'Duration', 'Studio',
 			'Top250', 'Trailer', 'Writer', 'Tagline', 'PlotOutline', 'Plot', 'IMDBNumber', 'PercentPlayed',
 			'LastPlayed', 'PlayCount', 'VideoCodec', 'VideoResolution', 'VideoAspect', 'AudioCodec',
-			'AudioChannels', 'AudioLanguage', 'SubtitleLanguage', 'StereoscopicMode',
-			'EndTimeResume', 'Status', 'Tag', 'Appearances', 'Overlay'].sort().map(l => 'ListItem.' + l)},
+			'AudioChannels', 'AudioLanguage', 'SubtitleLanguage', 'StereoscopicMode', 'EndTimeResume',
+			'Status', 'Tag', 'Appearances', 'Overlay', 'CurrentItem', 'TvShowDBID']
+				.concat(uniqueid_labels).sort().map(l => 'ListItem.' + l)},
 	musiclistitem: {title: 'Music ListItem InfoLabels', order: 6,
-		list: ['Artist', 'Album', 'DiscNumber', 'TrackNumber', 'AlbumArtist', 'Comment', 'Contributors', 'Mood', 'ContributorAndRole', 'Property(Role.Arranger)', 'Property(Role.Composer)', 'Property(Role.Conductor)',
+		list: ['Artist', 'Album', 'DiscNumber', 'TrackNumber', 'AlbumArtist', 'Comment', 'Contributors', 'Mood',
+			'ContributorAndRole', 'Property(Role.Arranger)', 'Property(Role.Composer)', 'Property(Role.Conductor)',
 			'Property(Role.DJMixer)', 'Property(Role.Engineer)', 'Property(Role.Lyricist)', 'Property(Role.Mixer)',
 			'Property(Role.Orchestra)', 'Property(Role.Producer)', 'Property(Role.Remixer)', 'Property(Artist_Sortname)',
 			'Property(Artist_Type)', 'Property(Artist_Gender)', 'Property(Artist_Disambiguation)', 'Property(Artist_Born)',
@@ -337,12 +343,15 @@ jskodi.skinlabels.labels = {
 			'Property(Artist_YearsActive)', 'Property(Artist_Instrument)', 'Property(Artist_Description)',
 			'Property(Artist_Style)', 'Property(Artist_Genre)', 'Lyrics', 'Property(Album_Mood)',
 			'Property(Album_Style)', 'Property(Album_Theme)', 'Property(Album_Type)', 'Property(Album_Label)',
-			'Property(Album_Description)'].sort().map(l => 'ListItem.' + l)},
+			'Property(Album_Description)', 'DiscTitle', 'TotalDiscs', 'ReleaseDate', 'OriginalDate', 'BPM',
+			'BitRate', 'SampleRate', 'MusicChannels', 'AlbumStatus', 'Property(Album_Duration)']
+				.sort().map(l => 'ListItem.' + l)},
 	addonlistitem: {title: 'Add-on ListItem InfoLabels', order: 7,
 		list: ['AddonBroken', 'AddonCreator', 'AddonDescription', 'AddonDisclaimer', 'AddonInstallDate', 'AddonSize',
 			'AddonLastUpdated', 'AddonLastUsed', 'AddonName', 'AddonNews', 'AddonSummary', 'AddonType', 'AddonVersion',
-			'Property(Addon.Changelog)', 'Property(Addon.ID)', 'Property(Addon.Path)', 'Property(Addon.Status)']
-			.sort().map(l => 'ListItem.' + l)},
+			'Property(Addon.Changelog)', 'Property(Addon.ID)', 'Property(Addon.Path)', 'Property(Addon.Status)',
+			'AddonLifecycleType', 'AddonLifecycleDesc']
+				.sort().map(l => 'ListItem.' + l)},
 	path: {title: 'Path InfoLabels', order: 2,
 		list: pathlistitem_labels.concat(pathlistitem_labels.map(l => 'Container.' + l))
 			.concat(['Folderpath', 'Filenameandpath', 'Filename'].map(l => 'Player.' + l))
@@ -353,7 +362,8 @@ jskodi.skinlabels.labels = {
 			'VideoEncoderInfo', 'InternetState', 'OSVersionInfo', 'FreeSpace', 'UsedSpace', 'TotalSpace',
 			'UsedSpacePercent', 'FreeSpacePercent', 'BuildDate', 'FriendlyName', 'ScreenMode', 'ScreenWidth',
 			'ScreenHeight', 'ScreenResolution', 'Language', 'ProfileName', 'ProfileCount', 'ProfileThumb',
-			'CurrentControl', 'CurrentControlID', 'BuildVersion'].map(l => 'System.' + l)
+			'CurrentControl', 'CurrentControlID', 'BuildVersion', 'BuildVersionCode', 'BuildVersionGit',
+			'AddonUpdateCount'].map(l => 'System.' + l)
 			.concat(['AspectRatio', 'CurrentTheme', 'CurrentColourTheme', 'Font'].map(l => 'Skin.' + l))
 			.concat('Window.Property(xmlfile)', 'Weather.Conditions')
 			.concat(['IsDHCP', 'IPAddress', 'LinkState', 'MacAddress'].map(l => 'Network.' + l)).sort()},
