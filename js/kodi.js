@@ -32,6 +32,8 @@ jskodi.Connection = class {
 		if (this.host.endsWith('/'))
 			this.host = this.host.slice(0, -1)
 		this.wsurl = (secure ? 'wss://' : 'ws://') + host.hostname + ':' + port + base
+		this.same_origin = host.origin == window.location.origin
+
 		this.nextid = 0
 		this.openmethods = {}
 		this.notifications = {}
@@ -154,9 +156,10 @@ jskodi.Connection = class {
 			const request = {jsonrpc: '2.0', method, params, id}
 			const strequest = JSON.stringify(request)
 			if (LIMIT_WEBSOCKET && strequest.length > LIMIT_WEBSOCKET) {
-				reject(this.build_connection_error('too-long', "Request is too long for Kodi websocket"))
-				// TODO: No CORS, only works on same host
-				if (false) resolve(this.http_call(method, params, {id, logcall, alldata}))
+				if (this.same_origin)
+					resolve(this.http_call(method, params, {id, logcall, alldata}))
+				else
+					reject(this.build_connection_error('too-long', "Request is too long for Kodi websocket"))
 				return
 			}
 			if (logcall)
@@ -197,7 +200,8 @@ jskodi.Connection = class {
 			method: 'POST',
 			body: JSON.stringify(request),
 			headers: { 'Content-Type': 'application/json' }
-		}).json()
+		})
+		data = await data.json()
 		if (logcall)
 			console.log('Result', data)
 		if (data.result)
@@ -229,7 +233,7 @@ jskodi.Connection = class {
 	async get_infos(infos, booleans=false) {
 		if (!infos || !infos.length) return {}
 		const method = !booleans ? 'XBMC.GetInfoLabels' : 'XBMC.GetInfoBooleans'
-		if (LIMIT_WEBSOCKET) {
+		if (!this.same_origin && LIMIT_WEBSOCKET) {
 			const result = {}
 			const listoflists = infos.reduce((result, item) => {
 				if (result.length && result[result.length - 1].join('","').length + item.length <
